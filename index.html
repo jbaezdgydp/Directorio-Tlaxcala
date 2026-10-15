@@ -502,31 +502,25 @@
         function goHome() { appState.currentView = 'dashboard'; appState.selectedAspiranteId = null; document.getElementById('dashboardView').classList.remove('hidden'); document.getElementById('detailView').classList.add('hidden'); document.getElementById('homeBtnContainer').classList.remove('hidden'); applyPermissions(); render(); }
         function viewProfile(id) { appState.currentView = 'detail'; appState.selectedAspiranteId = id; document.getElementById('dashboardView').classList.add('hidden'); document.getElementById('detailView').classList.remove('hidden'); document.getElementById('homeBtnContainer').classList.add('hidden'); applyPermissions(); renderDetail(); }
 
-        // --- RENDERIZADO ---
+        // --- RENDERIZADO OPTIMIZADO ---
         function render() {
-            const grid = document.getElementById('profilesGrid'); grid.innerHTML = '';
+            const grid = document.getElementById('profilesGrid'); 
             const filterText = document.getElementById('filterText') ? document.getElementById('filterText').value.toLowerCase() : '';
             const filterCargo = document.getElementById('filterCargo') ? document.getElementById('filterCargo').value : 'Todos';
             const filterPartido = document.getElementById('filterPartido') ? document.getElementById('filterPartido').value : 'Todos';
             const filterEtapa = document.getElementById('filterEtapa') ? document.getElementById('filterEtapa').value : 'Todos';
-
             const filterDetalleCargo = document.getElementById('filterDetalleCargo') ? document.getElementById('filterDetalleCargo').value : 'Todos';
 
             const filteredAspirantes = appState.aspirantes.filter(asp => {
                 const textTarget = (asp.nombre || '') + ' ' + (asp.cargo || '');
                 const matchName = textTarget.toLowerCase().includes(filterText);
-                
-                // Validación del cargo principal
                 const matchCargo = filterCargo === 'Todos' || (asp.cargo && asp.cargo.startsWith(filterCargo)); 
                 
-                // Validación del subfiltro (Detalle del cargo)
                 let matchDetalle = true;
                 if (filterCargo !== 'Todos' && filterDetalleCargo !== 'Todos') {
                     if (filterCargo === 'Presidente de Comunidad') {
-                        // El municipio está en medio, así que combinamos el cargo y el municipio para buscar la frase exacta
                         matchDetalle = asp.cargo && asp.cargo.includes(filterCargo + ' ' + filterDetalleCargo);
                     } else {
-                        // Para Diputados y Presidentes Municipales, el distrito/municipio está al final
                         matchDetalle = asp.cargo && asp.cargo.endsWith(filterDetalleCargo);
                     }
                 }
@@ -538,18 +532,47 @@
             });
 
             document.getElementById('totalCount').innerText = filteredAspirantes.length === appState.aspirantes.length ? `${appState.aspirantes.length} registrados` : `Mostrando ${filteredAspirantes.length} de ${appState.aspirantes.length}`;
-            if (filteredAspirantes.length === 0) { grid.innerHTML = `<div class="col-span-full py-12 text-center"><i class="fas fa-search text-gray-300 text-5xl mb-4 block"></i><p class="text-gray-500 font-medium text-lg">No se encontraron resultados.</p></div>`; return; }
+            
+            if (filteredAspirantes.length === 0) { 
+                grid.innerHTML = `<div class="col-span-full py-12 text-center"><i class="fas fa-search text-gray-300 text-5xl mb-4 block"></i><p class="text-gray-500 font-medium text-lg">No se encontraron resultados.</p></div>`; 
+                return; 
+            }
 
+            // Construcción en bloque para máximo rendimiento en la pantalla
+            let htmlContent = '';
             filteredAspirantes.forEach(asp => {
-                const card = document.createElement('div'); 
-                card.className = "bg-white rounded-lg shadow-sm hover:shadow-md transition duration-200 border border-gray-200 overflow-hidden cursor-pointer break-inside-avoid"; 
-                card.onclick = () => viewProfile(asp.id);
-                let avatarHtml = `<div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl">${(asp.nombre || '?').charAt(0).toUpperCase()}</div>`;
-                if (asp.foto && asp.foto.trim() !== '') { avatarHtml = `<img src="${asp.foto}" class="h-12 w-12 rounded-full object-contain bg-gray-100 border border-gray-200">`; }
+                let avatarHtml = `<div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl flex-shrink-0">${(asp.nombre || '?').charAt(0).toUpperCase()}</div>`;
+                if (asp.foto && asp.foto.trim() !== '') { 
+                    avatarHtml = `<img src="${asp.foto}" class="h-12 w-12 rounded-full object-cover bg-gray-100 border border-gray-200 flex-shrink-0">`; 
+                }
 
-                card.innerHTML = `<div class="p-5"><div class="flex items-center space-x-4 mb-4">${avatarHtml}<div><h3 class="text-lg font-bold text-gray-900 leading-tight">${asp.nombre}</h3><div class="flex flex-wrap gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">${asp.etapa}</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-100">${asp.partido || 'N/A'}</span></div></div></div><div class="text-sm text-gray-600 mb-3"><p class="font-medium text-gray-800"><i class="fas fa-bullseye w-4 mr-1 text-gray-400"></i> ${asp.cargo}</p>${asp.telefono ? `<p class="mt-1"><i class="fas fa-phone w-4 mr-1 text-gray-400"></i> ${asp.telefono}</p>` : ''}</div><div class="flex justify-between items-center text-xs text-gray-500 pt-3 border-t border-gray-100"><span><i class="far fa-calendar-check mr-1"></i> ${asp.actividades ? asp.actividades.length : 0} Acts.</span><span><i class="far fa-newspaper mr-1"></i> ${asp.publicaciones ? asp.publicaciones.length : 0} Pubs.</span></div></div>`;
-                grid.appendChild(card);
+                htmlContent += `
+                <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition duration-200 border border-gray-200 overflow-hidden cursor-pointer break-inside-avoid" onclick="viewProfile('${asp.id}')">
+                    <div class="p-5">
+                        <div class="flex items-center space-x-4 mb-4">
+                            ${avatarHtml}
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900 leading-tight">${asp.nombre}</h3>
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">${asp.etapa}</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-100">${asp.partido || 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3">
+                            <p class="font-medium text-gray-800"><i class="fas fa-bullseye w-4 mr-1 text-gray-400"></i> ${asp.cargo}</p>
+                            ${asp.telefono ? `<p class="mt-1"><i class="fas fa-phone w-4 mr-1 text-gray-400"></i> ${asp.telefono}</p>` : ''}
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-gray-500 pt-3 border-t border-gray-100">
+                            <span><i class="far fa-calendar-check mr-1"></i> ${asp.actividades ? asp.actividades.length : 0} Acts.</span>
+                            <span><i class="far fa-newspaper mr-1"></i> ${asp.publicaciones ? asp.publicaciones.length : 0} Pubs.</span>
+                        </div>
+                    </div>
+                </div>`;
             });
+            
+            // Inyectamos todo el HTML de golpe
+            grid.innerHTML = htmlContent;
         }
 
         function renderDetail() {
