@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directorio Electoral</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-800">
+
+    <!-- OVERLAY DE ACCESO (LOGIN) -->
+    <div id="loginOverlay" class="fixed inset-0 bg-purple-900 z-[200] flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md text-center mx-4">
+            <i class="fas fa-users text-5xl text-purple-600 mb-4"></i>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Directorio Electoral</h2>
+            <p class="text-sm text-gray-500 mb-8">Selecciona tu modo de acceso</p>
+            <div class="space-y-3">
+                <button onclick="enterAsGuest()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-md transition border border-gray-300 flex items-center justify-center">
+                    <i class="fas fa-eye mr-2"></i> Entrar como Invitado (Solo Lectura)
+                </button>
+                <button onclick="promptLogin('editor')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-md transition flex items-center justify-center">
+                    <i class="fas fa-pen mr-2"></i> Entrar como Capturista (Agregar/Editar)
+                </button>
+                <button onclick="promptLogin('admin')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-md transition flex items-center justify-center">
+                    <i class="fas fa-lock mr-2"></i> Entrar como Administrador (Control Total)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: INGRESAR CONTRASEÑA -->
+    <div id="passwordModal" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden z-[250] flex justify-center items-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-800"><i class="fas fa-lock mr-2 text-gray-500"></i> Acceso de Administrador</h3>
+            </div>
+            <div class="p-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Ingresa la contraseña:</label>
+                <input type="password" id="adminPasswordInput" onkeypress="if(event.key === 'Enter') submitPassword()" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="••••••••">
+            </div>
+            <div class="px-6 py-4 bg-gray-50 text-right space-x-3">
+                <button onclick="closeModal('passwordModal')" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100 transition">Cancelar</button>
+                <button onclick="submitPassword()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAY DE CARGA -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-60 z-[100] hidden flex items-center justify-center">
+        <div class="bg-white p-5 rounded-lg shadow-xl flex items-center space-x-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            <span id="loadingText" class="text-gray-800 font-semibold text-lg">Conectando...</span>
+        </div>
+    </div>
+
+    <!-- NAVEGACIÓN -->
+    <nav class="bg-purple-800 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center cursor-pointer" onclick="goHome()">
+                    <i class="fas fa-users text-2xl mr-3"></i>
+                    <span class="font-bold text-xl tracking-tight">Directorio Electoral</span>
+                </div>
+                <div id="homeBtnContainer">
+                    <button id="btnNuevoRegistro" onclick="prepareNewProfile()" class="bg-purple-600 hover:bg-pink-500 px-4 py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-sm hidden">
+                        <i class="fas fa-plus mr-2"></i>Nuevo Registro
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- VISTA DE CUADRÍCULA (DASHBOARD) -->
+        <div id="dashboardView">
+           <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-bold text-gray-800">Directorio de Aspirantes</h1>
+                <div class="flex items-center space-x-3">
+                    <div class="text-sm font-medium text-blue-800 bg-blue-100 px-3 py-1 rounded-full" id="totalCount">0 registrados</div>
+                    <button id="btnExportDashboard" onclick="exportarDashboardPDF()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-sm flex items-center">
+                        <i class="fas fa-file-pdf mr-2"></i> Exportar
+                    </button>
+                </div>
+            </div>
+            
+            <!-- ====== SECCIÓN DE FILTROS ====== -->
+            <div id="seccionFiltros" class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Buscar Aspirante</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-search text-gray-400"></i></div>
+                            <input type="text" id="filterText" onkeyup="render()" class="pl-10 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. Apizaco o Juan...">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Filtrar por Cargo</label>
+                        <select id="filterCargo" onchange="handleFiltroCargoChange()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="Todos">Todos los cargos</option><option value="Gobernador">Gobernador</option><option value="Diputado Federal">Diputado Federal</option><option value="Diputado Local">Diputado Local</option><option value="Presidente Municipal">Presidente Municipal</option><option value="Presidente de Comunidad">Presidente de Comunidad</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Filtrar por Partido</label>
+                        <select id="filterPartido" onchange="render()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="Todos">Todos los partidos</option><option value="MORENA">MORENA</option><option value="PAN">PAN</option><option value="PRI">PRI</option><option value="PT">PT</option><option value="MC">MC</option><option value="PVEM">PVEM</option><option value="PAC">PAC</option><option value="RSP">RSP</option><option value="PRDT">PRDT</option><option value="FXM">FXM</option><option value="SOMOS MÉXICO">SOMOS MÉXICO</option><option value="PAZ">PAZ</option><option value="NUEVA ALIANZA">NUEVA ALIANZA</option><option value="INDEPENDIENTE">INDEPENDIENTE</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Etapa del Proceso</label>
+                        <select id="filterEtapa" onchange="render()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="Todos">Todas las etapas</option><option value="Aspirante">Aspirante</option><option value="Precandidato">Precandidato</option><option value="Candidato">Candidato</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SUBFILTROS DINÁMICOS Y BOTÓN LIMPIAR -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mt-4">
+                    <!-- Contenedor del Subfiltro (Izquierda) -->
+                    <div id="containerSubFiltros" class="hidden bg-gray-50 p-3 rounded-md border border-gray-200 w-full md:w-2/3 mb-3 md:mb-0">
+                        <div class="flex items-center">
+                            <label id="labelSubFiltro" class="block text-xs font-bold text-gray-600 uppercase mr-3 whitespace-nowrap">Detalle Adicional</label>
+                            <select id="filterDetalleCargo" onchange="render()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <!-- Opciones inyectadas por JS -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Botón Quitar Filtros (Derecha) -->
+                    <button onclick="limpiarFiltros()" class="text-sm font-medium text-gray-500 hover:text-red-600 transition flex items-center md:ml-auto bg-gray-100 hover:bg-red-50 px-3 py-2 rounded-md border border-gray-200">
+                        <i class="fas fa-eraser mr-2"></i> Quitar Filtros
+                    </button>
+                </div>
+            </div> <!-- Fin de seccionFiltros -->
+
+            <div id="profilesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+
+        <!-- VISTA DE DETALLES DEL PERFIL -->
+        <div id="detailView" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="goHome()" class="text-blue-600 hover:text-blue-800 font-medium flex items-center transition">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver al Directorio
+                </button>
+                <button onclick="exportarFichaPDF()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-sm flex items-center">
+                    <i class="fas fa-file-pdf mr-2"></i> Exportar PDF
+                </button>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 relative">
+                <div class="absolute top-4 right-4 flex space-x-3">
+                    <button id="btnDeleteProfile" onclick="confirmDelete()" class="text-gray-400 hover:text-red-600 transition hidden" title="Eliminar Aspirante Completamente">
+                        <i class="fas fa-trash-alt text-xl"></i>
+                    </button>
+                    <button id="btnEditProfile" onclick="openEditModal()" class="text-gray-400 hover:text-blue-600 transition hidden" title="Editar Perfil">
+                        <i class="fas fa-edit text-xl"></i>
+                    </button>
+                </div>
+                <div class="flex flex-col md:flex-row md:items-center">
+                    
+                    <!-- FOTO DE PERFIL CORREGIDA (MARCO COMPLETO) -->
+                    <div id="detailAvatarContainer"></div>
+
+                    <div>
+                        <div class="flex items-center space-x-3 mb-2">
+                            <h2 id="detailName" class="text-3xl font-bold text-gray-900"></h2>
+                            <span id="detailEtapa" class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800"></span>
+                            <span id="detailPartido" class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200"></span>
+                        </div>
+                        <p id="detailCargo" class="text-lg text-gray-600 font-medium mb-3"></p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 bg-gray-50 p-4 rounded-md">
+                            <div><span class="block text-xs font-bold text-gray-500 uppercase">Teléfono de Contacto</span><p id="detailTelefono" class="text-sm text-gray-800 mt-1"></p></div>
+                            
+                            <!-- NUEVA SECCIÓN: Redes Sociales en Perfil -->
+                            <div class="mb-4">
+                                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Redes Sociales</h3>
+                                <div id="detailRedes" class="text-sm text-gray-800 break-words">
+                                    <!-- Aquí se inyectarán los enlaces -->
+                                </div>
+                            </div>
+
+                            <div><span class="block text-xs font-bold text-gray-500 uppercase">Biografía Breve</span><p id="detailBio" class="text-sm text-gray-800 mt-1"></p></div>
+                            <div class="md:col-span-2"><span class="block text-xs font-bold text-gray-500 uppercase">Observaciones Privadas</span><p id="detailObservaciones" class="text-sm text-gray-800 mt-1 bg-yellow-50 p-2 rounded border border-yellow-100"></p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Línea de Tiempo -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-gray-800 border-b-2 border-blue-600 pb-2 inline-block">Línea de Tiempo</h3><button id="btnNewActivity" onclick="openModal('activityModal')" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded shadow-sm transition hidden"><i class="fas fa-plus mr-1"></i> Actividad</button></div>
+                    <div id="timelineContainer" class="relative border-l-2 border-gray-200 ml-3 space-y-6"></div>
+                </div>
+                <!-- Monitoreo de Medios -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-gray-800 border-b-2 border-indigo-600 pb-2 inline-block">Monitoreo de Medios</h3><button id="btnNewPublication" onclick="openModal('publicationModal')" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded shadow-sm transition hidden"><i class="fas fa-plus mr-1"></i> Publicación</button></div>
+                    <div id="mediaContainer" class="space-y-4"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Perfil (Crear/Editar) -->
+    <div id="addModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h3 id="profileModalTitle" class="text-lg font-semibold text-gray-800">Registrar Nuevo Aspirante</h3>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[75vh]">
+                <input type="hidden" id="formProfileId">
+                <div class="space-y-4">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fotografía (PNG o JPG)</label>
+                        <div class="flex items-center space-x-4">
+                            <div class="h-16 w-16 rounded-full bg-gray-200 border border-gray-300 overflow-hidden flex items-center justify-center shrink-0">
+                                <img id="fotoPreview" src="" class="hidden h-full w-full object-cover">
+                                <i id="fotoIcon" class="fas fa-camera text-gray-400 text-xl"></i>
+                            </div>
+                            <input type="file" id="formFoto" accept="image/png, image/jpeg" onchange="previewImage(event)" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                        <input type="text" id="formNombre" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- CARGO CON MENÚS DINÁMICOS -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cargo al que aspira</label>
+                            <select id="formCargo" onchange="handleCargoChange()" class="w-full border border-gray-300 rounded-md px-3 py-2 mb-2">
+                                <option value="">Selecciona un cargo...</option>
+                                <option value="Gobernador">Gobernador</option>
+                                <option value="Diputado Federal">Diputado Federal</option>
+                                <option value="Diputado Local">Diputado Local</option>
+                                <option value="Presidente Municipal">Presidente Municipal</option>
+                                <option value="Presidente de Comunidad">Presidente de Comunidad</option>
+                            </select>
+                            
+                            <!-- Submenú que se oculta/muestra automáticamente -->
+                            <div id="containerDetalleCargo" class="hidden bg-blue-50 p-2 rounded border border-blue-100">
+                                <label id="labelDetalleCargo" class="block text-xs font-bold text-blue-700 uppercase mb-1">Detalle</label>
+                                <select id="formDetalleCargo" class="w-full border border-gray-300 rounded-md px-3 py-1 text-sm mb-2 hidden"></select>
+                                
+                                <!-- Nuevo selector de municipio exclusivo para Presidentes de Comunidad -->
+                                <div id="containerMunicipioComunidad" class="hidden w-full mb-2">
+                                    <select id="formMunicipioComunidad" class="w-full border border-gray-300 rounded-md px-3 py-1 text-sm mb-1"></select>
+                                </div>
+                                
+                                <input type="text" id="formDetalleCargoText" class="w-full border border-gray-300 rounded-md px-3 py-1 text-sm hidden" placeholder="Ej. San Bartolomé">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Etapa del Proceso</label>
+                            <select id="formEtapa" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                                <option value="Aspirante">Aspirante</option><option value="Precandidato">Precandidato</option><option value="Candidato">Candidato</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Partido Político</label>
+                            <select id="formPartido" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                                <option value="">Selecciona un partido...</option><option value="MORENA">MORENA</option><option value="PAN">PAN</option><option value="PRI">PRI</option><option value="PT">PT</option><option value="MC">MC</option><option value="PVEM">PVEM</option><option value="PAC">PAC</option><option value="RSP">RSP</option><option value="PRDT">PRDT</option><option value="FXM">FXM</option><option value="SOMOS MÉXICO">SOMOS MÉXICO</option><option value="PAZ">PAZ</option><option value="NUEVA ALIANZA">NUEVA ALIANZA</option><option value="INDEPENDIENTE">INDEPENDIENTE</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Número Telefónico</label>
+                            <input type="tel" id="formTelefono" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        </div>
+                    </div>
+
+                    <!-- NUEVO CAMPO: Redes Sociales -->
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Redes Sociales (Enlaces)</label>
+                        <input type="text" id="formRedes" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. https://facebook.com/candidato, https://x.com/candidato">
+                    </div>
+
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Biografía Breve</label><textarea id="formBio" rows="2" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Observaciones</label><textarea id="formObservaciones" rows="2" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea></div>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 text-right space-x-3">
+                <button onclick="closeModal('addModal')" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100 transition">Cancelar</button>
+                <button onclick="processProfileForm()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales de Actividad y Monitoreo (Minimizados) -->
+    <div id="activityModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Registrar Actividad</h3>
+            </div>
+            <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label><input type="text" id="formActFecha" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Asistentes (Aprox.)</label><input type="number" id="formActAsistentes" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Ej. 150"></div>
+                </div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Título del Evento</label><input type="text" id="formActTitulo" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación (Coordenadas/Lugar)</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="formActUbicacion" class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. 19.316, -98.238">
+                        <button type="button" onclick="obtenerUbicacion()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-md transition border border-blue-200" title="Obtener mi ubicación actual">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Anfitrión(es)</label><input type="text" id="formActAnfitriones" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Ej. Juan Pérez"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label><textarea id="formActDesc" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea></div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 text-right space-x-3">
+                <button onclick="closeModal('activityModal')" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md">Cancelar</button>
+                <button onclick="processActivityForm()" class="px-4 py-2 bg-blue-600 text-white rounded-md">Guardar</button>
+            </div>
+        </div>
+    </div>
+    <div id="publicationModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center"><div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden"><div class="px-6 py-4 border-b border-gray-200"><h3 class="text-lg font-semibold text-gray-800">Agregar al Monitoreo</h3></div><div class="p-6 space-y-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Plataforma</label><select id="formPubPlataforma" class="w-full border border-gray-300 rounded-md px-3 py-2"><option value="Facebook">Facebook</option><option value="X">X (Twitter)</option><option value="Instagram">Instagram</option><option value="TikTok">TikTok</option><option value="Noticia">Noticia</option><option value="Otro">Otro</option></select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label><input type="text" id="formPubFecha" class="w-full border border-gray-300 rounded-md px-3 py-2"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Resumen</label><textarea id="formPubContenido" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea></div><div><label class="block text-sm font-medium text-gray-700 mb-1">URL (Opcional)</label><input type="url" id="formPubUrl" class="w-full border border-gray-300 rounded-md px-3 py-2"></div></div><div class="px-6 py-4 bg-gray-50 text-right space-x-3"><button onclick="closeModal('publicationModal')" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md">Cancelar</button><button onclick="processPublicationForm()" class="px-4 py-2 bg-indigo-600 text-white rounded-md">Guardar</button></div></div></div>
+
+    <script>
+        // ¡IMPORTANTE! REEMPLAZA ESTA URL CON LA QUE TE DIO APPS SCRIPT
+        const API_URL = "https://script.google.com/macros/s/AKfycbziWi8t2n_Q1sqB1UPZJOB4F3HqMJGW7JdhoTrCFDuYSXMgkIu_aPhjDAIACaLkMYlBSQ/exec";
+
+        let appState = { aspirantes: [], currentView: 'dashboard', selectedAspiranteId: null, isReadOnly: true, role: 'guest' };
+        let currentBase64Image = null; 
+
+        // LISTAS DE DISTRITOS Y MUNICIPIOS
+        const MUNICIPIOS = ["Acuamanala de Miguel Hidalgo", "Amaxac de Guerrero", "Apetatitlán de Antonio Carvajal", "Apizaco", "Atlangatepec", "Atltzayanca", "Benito Juárez", "Calpulalpan", "Chiautempan", "Contla de Juan Cuamatzi", "Cuapiaxtla", "Cuaxomulco", "El Carmen Tequexquitla", "Emiliano Zapata", "Españita", "Huamantla", "Hueyotlipan", "Ixtacuixtla de Mariano Matamoros", "Ixtenco", "La Magdalena Tlaltelulco", "Lázaro Cárdenas", "Mazatecochco de José María Morelos", "Muñoz de Domingo Arenas", "Nanacamilpa de Mariano Arista", "Natívitas", "Panotla", "Papalotla de Xicohténcatl", "San Damián Texóloc", "San Francisco Tetlanohcan", "San Jerónimo Zacualpan", "San José Teacalco", "San Juan Huactzinco", "San Lorenzo Axocomanitla", "San Lucas Tecopilco", "San Pablo del Monte", "Sanctórum de Lázaro Cárdenas", "Santa Ana Nopalucan", "Santa Apolonia Teacalco", "Santa Catarina Ayometla", "Santa Cruz Quilehtla", "Santa Cruz Tlaxcala", "Santa Isabel Xiloxoxtla", "Tenancingo", "Teolocholco", "Tepetitla de Lardizábal", "Tepeyanco", "Terrenate", "Tetla de la Solidaridad", "Tetlatlahuca", "Tlaxcala", "Tlaxco", "Tocatlán", "Totolac", "Tzompantepec", "Xaloztoc", "Xaltocan", "Xicohtzinco", "Yauhquemehcan", "Zacatelco", "Ziltlaltépec de Trinidad Sánchez Santos"];
+        const FED_DISTRITOS = ["I", "II", "III"];
+        const LOC_DISTRITOS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV"];
+
+        // LÓGICA DE SUBMENÚ PARA LOS FILTROS PRINCIPALES
+
+        // --- FUNCIÓN PARA QUITAR TODOS LOS FILTROS ---
+        function limpiarFiltros() {
+            // 1. Vaciar el buscador de texto
+            document.getElementById('filterText').value = '';
+            
+            // 2. Regresar todos los menús desplegables a "Todos"
+            document.getElementById('filterCargo').value = 'Todos';
+            document.getElementById('filterPartido').value = 'Todos';
+            document.getElementById('filterEtapa').value = 'Todos';
+            
+            // 3. Ocultar el submenú de distrito/municipio y refrescar la tabla
+            handleFiltroCargoChange();
+        }
+
+        function handleFiltroCargoChange() {
+            const cargo = document.getElementById('filterCargo').value;
+            const containerSub = document.getElementById('containerSubFiltros');
+            const labelSub = document.getElementById('labelSubFiltro');
+            const selectSub = document.getElementById('filterDetalleCargo');
+            
+            selectSub.innerHTML = '<option value="Todos">Todos</option>';
+            
+            if (cargo === 'Diputado Federal') {
+                containerSub.classList.remove('hidden'); labelSub.innerText = 'Distrito Federal';
+                FED_DISTRITOS.forEach(d => selectSub.innerHTML += `<option value="- Distrito ${d}">Distrito ${d}</option>`);
+            } else if (cargo === 'Diputado Local') {
+                containerSub.classList.remove('hidden'); labelSub.innerText = 'Distrito Local';
+                LOC_DISTRITOS.forEach(d => selectSub.innerHTML += `<option value="- Distrito ${d}">Distrito ${d}</option>`);
+            } else if (cargo === 'Presidente Municipal' || cargo === 'Presidente de Comunidad') {
+                containerSub.classList.remove('hidden'); labelSub.innerText = 'Municipio';
+                MUNICIPIOS.forEach(m => selectSub.innerHTML += `<option value="- ${m}">Municipio: ${m}</option>`);
+            } else {
+                containerSub.classList.add('hidden'); // Ocultar si es "Todos" o "Gobernador"
+            }
+            render(); // Disparar el renderizado al cambiar el cargo principal
+        }
+
+        // LÓGICA DE SUBMENÚ DE CARGO
+        function handleCargoChange() {
+            const cargo = document.getElementById('formCargo').value;
+            const container = document.getElementById('containerDetalleCargo');
+            const label = document.getElementById('labelDetalleCargo');
+            const select = document.getElementById('formDetalleCargo');
+            const containerMunicipioComunidad = document.getElementById('containerMunicipioComunidad');
+            const selectMunicipioComunidad = document.getElementById('formMunicipioComunidad');
+            const textInput = document.getElementById('formDetalleCargoText');
+
+            // Limpiamos los campos
+            select.innerHTML = '<option value="">Selecciona una opción...</option>';
+            selectMunicipioComunidad.innerHTML = '<option value="">Selecciona el Municipio...</option>';
+            
+            // Ocultamos todo inicialmente
+            select.classList.add('hidden');
+            containerMunicipioComunidad.classList.add('hidden');
+            textInput.classList.add('hidden');
+            textInput.value = '';
+
+            if (cargo === 'Diputado Federal') {
+                container.classList.remove('hidden'); label.innerText = 'Distrito Federal'; select.classList.remove('hidden');
+                FED_DISTRITOS.forEach(d => select.innerHTML += `<option value="Distrito ${d}">Distrito ${d}</option>`);
+            } else if (cargo === 'Diputado Local') {
+                container.classList.remove('hidden'); label.innerText = 'Distrito Local'; select.classList.remove('hidden');
+                LOC_DISTRITOS.forEach(d => select.innerHTML += `<option value="Distrito ${d}">Distrito ${d}</option>`);
+            } else if (cargo === 'Presidente Municipal') {
+                container.classList.remove('hidden'); label.innerText = 'Municipio'; select.classList.remove('hidden');
+                MUNICIPIOS.forEach(m => select.innerHTML += `<option value="${m}">${m}</option>`);
+            } else if (cargo === 'Presidente de Comunidad') {
+                // AQUÍ AGREGAMOS LA NUEVA LÓGICA
+                container.classList.remove('hidden'); 
+                label.innerText = 'Municipio y Nombre de la Comunidad'; 
+                
+                // Mostramos el selector de municipio
+                containerMunicipioComunidad.classList.remove('hidden');
+                MUNICIPIOS.forEach(m => selectMunicipioComunidad.innerHTML += `<option value="${m}">${m}</option>`);
+                
+                // Mostramos el campo de texto para la comunidad
+                textInput.classList.remove('hidden');
+                textInput.placeholder = "Nombre de la comunidad (Ej. San Bartolomé)";
+            } else {
+                container.classList.add('hidden'); // Gobernador
+            }
+        }
+
+        // --- SISTEMA DE ACCESO ---
+        
+        let loginRoleTarget = 'admin'; // Valor por defecto de seguridad
+
+        function enterAsGuest() { 
+            appState.isReadOnly = true; appState.role = 'guest'; 
+            document.getElementById('loginOverlay').classList.add('hidden'); 
+            applyPermissions(); fetchInitialData(); 
+        }
+        
+        function promptLogin(role) { 
+            loginRoleTarget = role; 
+            document.getElementById('adminPasswordInput').value = ""; 
+            openModal('passwordModal'); 
+            setTimeout(() => document.getElementById('adminPasswordInput').focus(), 100); 
+        }
+        
+        async function submitPassword() {
+            const passInput = document.getElementById('adminPasswordInput').value; 
+            if (!passInput) return; 
+            
+            showLoading('Verificando...');
+            try {
+                // Aquí enviamos explícitamente el password limpio y el rol objetivo
+                const res = await postData({ 
+                    accion: 'verificarContrasena', 
+                    password: passInput.trim(), 
+                    rol: loginRoleTarget 
+                });
+                
+                if (res && res.exito) { 
+                    appState.isReadOnly = false; 
+                    appState.role = res.rol; // El servidor nos confirma si somos admin o editor
+                    closeModal('passwordModal'); 
+                    document.getElementById('loginOverlay').classList.add('hidden'); 
+                    applyPermissions(); 
+                    fetchInitialData(); 
+                } else { 
+                    alert("Contraseña incorrecta."); 
+                    document.getElementById('adminPasswordInput').value = ""; 
+                    document.getElementById('adminPasswordInput').focus(); 
+                }
+            } catch (error) { 
+                alert("Error de conexión al verificar contraseña."); 
+                console.error(error);
+            } finally { 
+                hideLoading(); 
+            }
+        }
+
+        function applyPermissions() {
+            const btns = ['btnNuevoRegistro', 'btnEditProfile', 'btnNewActivity', 'btnNewPublication'];
+            const btnDelete = document.getElementById('btnDeleteProfile');
+
+            if (appState.role === 'guest') {
+                btns.forEach(id => document.getElementById(id).classList.add('hidden'));
+                if(btnDelete) btnDelete.classList.add('hidden');
+            } else if (appState.role === 'editor') {
+                btns.forEach(id => document.getElementById(id).classList.remove('hidden'));
+                if(btnDelete) btnDelete.classList.add('hidden'); // Oculto para capturistas
+            } else if (appState.role === 'admin') {
+                btns.forEach(id => document.getElementById(id).classList.remove('hidden'));
+                if(btnDelete) btnDelete.classList.remove('hidden'); // Solo visible para admin
+            }
+        }
+
+        function showLoading(text) { document.getElementById('loadingText').innerText = text; document.getElementById('loadingOverlay').classList.remove('hidden'); }
+        function hideLoading() { document.getElementById('loadingOverlay').classList.add('hidden'); }
+
+        async function fetchInitialData() {
+            if(API_URL.includes("AQUI_PEGA")) { alert("ADVERTENCIA: Aún no pegas tu URL."); return; }
+            try { showLoading('Cargando base de datos...'); const response = await fetch(`${API_URL}?accion=obtenerDatos`); appState.aspirantes = await response.json() || []; render(); } catch (error) { console.error("Aviso de conexión en segundo plano:", error); } finally { hideLoading(); }
+        }
+        async function postData(payload) { const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }); return await response.json(); }
+
+        function goHome() { appState.currentView = 'dashboard'; appState.selectedAspiranteId = null; document.getElementById('dashboardView').classList.remove('hidden'); document.getElementById('detailView').classList.add('hidden'); document.getElementById('homeBtnContainer').classList.remove('hidden'); applyPermissions(); render(); }
+        function viewProfile(id) { appState.currentView = 'detail'; appState.selectedAspiranteId = id; document.getElementById('dashboardView').classList.add('hidden'); document.getElementById('detailView').classList.remove('hidden'); document.getElementById('homeBtnContainer').classList.add('hidden'); applyPermissions(); renderDetail(); }
+
+        // --- RENDERIZADO ---
+        function render() {
+            const grid = document.getElementById('profilesGrid'); grid.innerHTML = '';
+            const filterText = document.getElementById('filterText') ? document.getElementById('filterText').value.toLowerCase() : '';
+            const filterCargo = document.getElementById('filterCargo') ? document.getElementById('filterCargo').value : 'Todos';
+            const filterPartido = document.getElementById('filterPartido') ? document.getElementById('filterPartido').value : 'Todos';
+            const filterEtapa = document.getElementById('filterEtapa') ? document.getElementById('filterEtapa').value : 'Todos';
+
+            const filterDetalleCargo = document.getElementById('filterDetalleCargo') ? document.getElementById('filterDetalleCargo').value : 'Todos';
+
+            const filteredAspirantes = appState.aspirantes.filter(asp => {
+                const textTarget = (asp.nombre || '') + ' ' + (asp.cargo || '');
+                const matchName = textTarget.toLowerCase().includes(filterText);
+                
+                // Validación del cargo principal
+                const matchCargo = filterCargo === 'Todos' || (asp.cargo && asp.cargo.startsWith(filterCargo)); 
+                
+                // Validación del subfiltro (Detalle del cargo)
+                let matchDetalle = true;
+                if (filterCargo !== 'Todos' && filterDetalleCargo !== 'Todos') {
+                    if (filterCargo === 'Presidente de Comunidad') {
+                        // El municipio está en medio, así que combinamos el cargo y el municipio para buscar la frase exacta
+                        matchDetalle = asp.cargo && asp.cargo.includes(filterCargo + ' ' + filterDetalleCargo);
+                    } else {
+                        // Para Diputados y Presidentes Municipales, el distrito/municipio está al final
+                        matchDetalle = asp.cargo && asp.cargo.endsWith(filterDetalleCargo);
+                    }
+                }
+
+                const matchPartido = filterPartido === 'Todos' || asp.partido === filterPartido;
+                const matchEtapa = filterEtapa === 'Todos' || asp.etapa === filterEtapa;
+                
+                return matchName && matchCargo && matchDetalle && matchPartido && matchEtapa;
+            });
+
+            document.getElementById('totalCount').innerText = filteredAspirantes.length === appState.aspirantes.length ? `${appState.aspirantes.length} registrados` : `Mostrando ${filteredAspirantes.length} de ${appState.aspirantes.length}`;
+            if (filteredAspirantes.length === 0) { grid.innerHTML = `<div class="col-span-full py-12 text-center"><i class="fas fa-search text-gray-300 text-5xl mb-4 block"></i><p class="text-gray-500 font-medium text-lg">No se encontraron resultados.</p></div>`; return; }
+
+            filteredAspirantes.forEach(asp => {
+                const card = document.createElement('div'); 
+                card.className = "bg-white rounded-lg shadow-sm hover:shadow-md transition duration-200 border border-gray-200 overflow-hidden cursor-pointer break-inside-avoid"; 
+                card.onclick = () => viewProfile(asp.id);
+                let avatarHtml = `<div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl">${(asp.nombre || '?').charAt(0).toUpperCase()}</div>`;
+                if (asp.foto && asp.foto.trim() !== '') { avatarHtml = `<img src="${asp.foto}" class="h-12 w-12 rounded-full object-contain bg-gray-100 border border-gray-200">`; }
+
+                card.innerHTML = `<div class="p-5"><div class="flex items-center space-x-4 mb-4">${avatarHtml}<div><h3 class="text-lg font-bold text-gray-900 leading-tight">${asp.nombre}</h3><div class="flex flex-wrap gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">${asp.etapa}</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-100">${asp.partido || 'N/A'}</span></div></div></div><div class="text-sm text-gray-600 mb-3"><p class="font-medium text-gray-800"><i class="fas fa-bullseye w-4 mr-1 text-gray-400"></i> ${asp.cargo}</p>${asp.telefono ? `<p class="mt-1"><i class="fas fa-phone w-4 mr-1 text-gray-400"></i> ${asp.telefono}</p>` : ''}</div><div class="flex justify-between items-center text-xs text-gray-500 pt-3 border-t border-gray-100"><span><i class="far fa-calendar-check mr-1"></i> ${asp.actividades ? asp.actividades.length : 0} Acts.</span><span><i class="far fa-newspaper mr-1"></i> ${asp.publicaciones ? asp.publicaciones.length : 0} Pubs.</span></div></div>`;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderDetail() {
+            const asp = appState.aspirantes.find(a => a.id === appState.selectedAspiranteId);
+            if (!asp) return;
+
+            let bigAvatarHtml = `<div class="h-32 w-32 rounded-lg bg-gray-200 flex items-center justify-center text-gray-500 text-5xl font-bold mb-4 md:mb-0 md:mr-6 flex-shrink-0 shadow-sm border border-gray-300"><i class="fas fa-user"></i></div>`;
+            if (asp.foto && asp.foto.trim() !== '') {
+                bigAvatarHtml = `<div class="h-40 w-32 rounded-lg bg-gray-100 flex-shrink-0 border border-gray-300 shadow-md mb-4 md:mb-0 md:mr-6 flex items-center justify-center overflow-hidden"><img src="${asp.foto}" class="h-full w-full object-contain"></div>`;
+            }
+            document.getElementById('detailAvatarContainer').innerHTML = bigAvatarHtml;
+
+            document.getElementById('detailName').innerText = asp.nombre; document.getElementById('detailCargo').innerText = asp.cargo; document.getElementById('detailEtapa').innerText = asp.etapa; document.getElementById('detailPartido').innerText = asp.partido || 'Sin partido'; document.getElementById('detailBio').innerText = asp.bio || 'Sin biografía.'; document.getElementById('detailTelefono').innerHTML = `<i class="fas fa-phone mr-2 text-gray-400"></i> ${asp.telefono || 'No registrado'}`; document.getElementById('detailObservaciones').innerText = asp.observaciones || 'Ninguna.';
+            
+            // <-- NUEVO BLOQUE DE REDES -->
+            const divRedes = document.getElementById('detailRedes');
+            if (asp.redesSociales && asp.redesSociales.trim() !== '') {
+                // Creamos un enlace simple
+                divRedes.innerHTML = `<a href="${asp.redesSociales.startsWith('http') ? asp.redesSociales : 'https://' + asp.redesSociales}" target="_blank" class="text-blue-600 hover:underline"><i class="fas fa-link mr-2 text-gray-400"></i> ${asp.redesSociales}</a>`;
+            } else {
+                divRedes.innerHTML = `<span class="text-gray-400 italic">No registradas</span>`;
+            }
+            // <-- FIN BLOQUE REDES -->
+
+            const tl = document.getElementById('timelineContainer'); tl.innerHTML = '';
+            if(!asp.actividades || asp.actividades.length === 0) {
+                tl.innerHTML = '<p class="text-sm text-gray-500 italic">No hay actividades registradas.</p>'; 
+            } else {
+                asp.actividades.forEach(act => {
+                    // Armamos los botones visuales (badges) para los nuevos datos
+                    let extrasHtml = '';
+                    if (act.asistentes || act.anfitriones || act.ubicacion) {
+                        extrasHtml = `<div class="mt-3 flex flex-wrap gap-2 text-xs font-medium text-gray-600">`;
+                        if (act.asistentes) extrasHtml += `<span class="bg-gray-100 px-2 py-1 rounded border border-gray-200"><i class="fas fa-users mr-1 text-gray-400"></i> ${act.asistentes} asis.</span>`;
+                        if (act.anfitriones) extrasHtml += `<span class="bg-gray-100 px-2 py-1 rounded border border-gray-200"><i class="fas fa-user-tie mr-1 text-gray-400"></i> ${act.anfitriones}</span>`;
+                        if (act.ubicacion) {
+                            // Si el usuario pone coordenadas, creamos un link directo a Google Maps
+                            let mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(act.ubicacion)}`;
+                            extrasHtml += `<a href="${mapUrl}" target="_blank" class="bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200 hover:bg-blue-100 transition" title="Ver ubicación en Google Maps"><i class="fas fa-map-marker-alt mr-1"></i> Mapa</a>`;
+                        }
+                        extrasHtml += `</div>`;
+                    }
+
+                    tl.innerHTML += `<div class="relative pl-6"><span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-blue-500 ring-4 ring-white"></span><div><span class="text-xs font-semibold text-blue-600 uppercase">${act.fecha}</span><h4 class="text-md font-bold text-gray-900 mt-1">${act.titulo}</h4><p class="text-sm text-gray-600 mt-1">${act.descripcion}</p>${extrasHtml}</div></div>`;
+                });
+            }
+            const media = document.getElementById('mediaContainer'); media.innerHTML = '';
+            if(!asp.publicaciones || asp.publicaciones.length === 0) media.innerHTML = '<p class="text-sm text-gray-500 italic">No hay publicaciones registradas.</p>'; else asp.publicaciones.forEach(pub => { let icon = 'fa-globe'; if(pub.plataforma.toLowerCase() === 'facebook') icon = 'fa-facebook text-blue-600'; if(pub.plataforma.toLowerCase() === 'x') icon = 'fa-x-twitter text-black'; if(pub.plataforma.toLowerCase() === 'instagram') icon = 'fa-instagram text-pink-600'; let urlHtml = pub.url ? `<a href="${pub.url}" target="_blank" class="text-xs text-blue-600 hover:underline mt-2 inline-block"><i class="fas fa-external-link-alt mr-1"></i>Ver</a>` : ''; media.innerHTML += `<div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm"><div class="flex justify-between items-start mb-2"><div class="flex items-center"><i class="fab ${icon} text-lg mr-2"></i><span class="font-bold text-sm">${pub.plataforma}</span></div><span class="text-xs text-gray-500">${pub.fecha}</span></div><p class="text-sm text-gray-700 italic">"${pub.contenido}"</p>${urlHtml}</div>`; });
+        }
+
+        // --- FORMULARIOS ---
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) { if(file.size > 2 * 1024 * 1024) { alert("Máximo 2MB."); event.target.value = ""; return; }
+                const reader = new FileReader(); reader.onload = function(e) { currentBase64Image = e.target.result; document.getElementById('fotoPreview').src = currentBase64Image; document.getElementById('fotoPreview').classList.remove('hidden'); document.getElementById('fotoIcon').classList.add('hidden'); }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function prepareNewProfile() {
+            document.getElementById('profileModalTitle').innerText = "Registrar Nuevo Aspirante";
+            document.getElementById('formProfileId').value = ""; document.getElementById('formNombre').value = ""; document.getElementById('formCargo').value = ""; document.getElementById('formEtapa').value = "Aspirante"; document.getElementById('formPartido').value = ""; document.getElementById('formTelefono').value = ""; document.getElementById('formBio').value = ""; document.getElementById('formObservaciones').value = "";
+            document.getElementById('formRedes').value = ""; // <-- NUEVO
+            document.getElementById('formFoto').value = ""; currentBase64Image = null; document.getElementById('fotoPreview').src = ""; document.getElementById('fotoPreview').classList.add('hidden'); document.getElementById('fotoIcon').classList.remove('hidden');
+            handleCargoChange(); // Ocultar el submenú de distrito
+            openModal('addModal');
+        }
+
+        function openEditModal() {
+            const asp = appState.aspirantes.find(a => a.id === appState.selectedAspiranteId);
+            if(!asp) return;
+            document.getElementById('profileModalTitle').innerText = "Editar Perfil";
+            document.getElementById('formProfileId').value = asp.id; document.getElementById('formNombre').value = asp.nombre; 
+            document.getElementById('formEtapa').value = asp.etapa; document.getElementById('formPartido').value = asp.partido || ''; document.getElementById('formTelefono').value = asp.telefono || ''; document.getElementById('formBio').value = asp.bio; document.getElementById('formObservaciones').value = asp.observaciones || '';
+            document.getElementById('formRedes').value = asp.redesSociales || ''; // <-- NUEVO
+            
+            // SEPARAR EL CARGO Y EL DETALLE PARA EL FORMULARIO
+            let baseCargo = asp.cargo || '';
+            let detalle1 = '';
+            let detalle2 = ''; // Para el nombre de la comunidad
+            
+            if (baseCargo.includes(' - ')) {
+                const parts = baseCargo.split(' - ');
+                baseCargo = parts[0];
+                detalle1 = parts[1]; // Municipio o Distrito
+                if (parts.length > 2) {
+                    detalle2 = parts[2]; // Nombre de la comunidad
+                }
+            }
+            
+            document.getElementById('formCargo').value = baseCargo;
+            handleCargoChange(); // Disparar la generación del menú secundario
+            
+            if (baseCargo === 'Presidente de Comunidad') {
+                document.getElementById('formMunicipioComunidad').value = detalle1;
+                document.getElementById('formDetalleCargoText').value = detalle2;
+            } else if (baseCargo !== 'Gobernador') {
+                document.getElementById('formDetalleCargo').value = detalle1;
+            }
+
+            document.getElementById('formFoto').value = ""; currentBase64Image = null;
+            if (asp.foto && asp.foto.trim() !== '') { document.getElementById('fotoPreview').src = asp.foto; document.getElementById('fotoPreview').classList.remove('hidden'); document.getElementById('fotoIcon').classList.add('hidden'); } 
+            else { document.getElementById('fotoPreview').src = ""; document.getElementById('fotoPreview').classList.add('hidden'); document.getElementById('fotoIcon').classList.remove('hidden'); }
+            openModal('addModal');
+        }
+
+        async function processProfileForm() {
+            const id = document.getElementById('formProfileId').value;
+            
+            // COMBINAR CARGO + DISTRITO/MUNICIPIO PARA GUARDAR
+            let cargoFinal = document.getElementById('formCargo').value;
+            const selectValue = document.getElementById('formDetalleCargo').value;
+            const textValue = document.getElementById('formDetalleCargoText').value;
+            const municipioComunidadValue = document.getElementById('formMunicipioComunidad').value;
+
+            if (['Diputado Federal', 'Diputado Local', 'Presidente Municipal'].includes(cargoFinal)) {
+                if(!selectValue) { alert("Por favor selecciona el distrito o municipio en el detalle del cargo."); return; }
+                cargoFinal += ' - ' + selectValue;
+            } else if (cargoFinal === 'Presidente de Comunidad') {
+                // Validamos que se haya elegido el municipio y escrito la comunidad
+                if(!municipioComunidadValue) { alert("Por favor selecciona el municipio al que pertenece la comunidad."); return; }
+                if(!textValue) { alert("Por favor escribe el nombre de la comunidad."); return; }
+                
+                // Armamos el texto final: "Presidente de Comunidad - Tlaxcala - Acuitlapilco"
+                cargoFinal += ' - ' + municipioComunidadValue + ' - ' + textValue;
+            }
+
+            const payload = {
+                nombre: document.getElementById('formNombre').value, 
+                cargo: cargoFinal, 
+                etapa: document.getElementById('formEtapa').value, 
+                partido: document.getElementById('formPartido').value, 
+                telefono: document.getElementById('formTelefono').value, 
+                redesSociales: document.getElementById('formRedes').value, // <-- NUEVO
+                bio: document.getElementById('formBio').value, 
+                observaciones: document.getElementById('formObservaciones').value,
+                fotoBase64: currentBase64Image, 
+                fotoUrlActual: id ? appState.aspirantes.find(a => a.id === id).foto : null 
+            };
+            
+            if(!payload.nombre || !document.getElementById('formCargo').value) { alert("Nombre y Cargo son obligatorios."); return; }
+            
+            try { 
+                showLoading(id ? 'Actualizando...' : 'Guardando... Esto puede tardar si incluye foto.'); 
+                const res = await postData({ accion: id ? 'actualizarAspirante' : 'guardarAspirante', aspirante: { id, ...payload } }); 
+                if(res.exito) { 
+                    if(id) { 
+                        const idx = appState.aspirantes.findIndex(a => a.id === id); 
+                        appState.aspirantes[idx] = { ...appState.aspirantes[idx], ...payload, foto: res.foto }; 
+                    } else { 
+                        appState.aspirantes.push({ id: res.id, actividades: [], publicaciones: [], ...payload, foto: res.foto }); 
+                    } 
+                } 
+                closeModal('addModal'); 
+                appState.currentView === 'detail' ? renderDetail() : render(); 
+            } catch(e) { alert("Error al guardar."); } finally { hideLoading(); }
+        }
+
+    // --- FUNCIONES PARA GUARDAR ACTIVIDADES Y PUBLICACIONES ---
+        async function processActivityForm() {
+            const payload = {
+                idAspirante: appState.selectedAspiranteId,
+                fecha: document.getElementById('formActFecha').value,
+                titulo: document.getElementById('formActTitulo').value,
+                descripcion: document.getElementById('formActDesc').value,
+                asistentes: document.getElementById('formActAsistentes').value,   // <-- NUEVO
+                ubicacion: document.getElementById('formActUbicacion').value,     // <-- NUEVO
+                anfitriones: document.getElementById('formActAnfitriones').value  // <-- NUEVO
+            };
+            
+            if(!payload.fecha || !payload.titulo) { alert("La fecha y el título son obligatorios."); return; }
+
+            try {
+                showLoading('Guardando actividad...');
+                const res = await postData({ accion: 'guardarActividad', actividad: payload });
+                
+                if (res && res.exito) {
+                    const asp = appState.aspirantes.find(a => a.id === payload.idAspirante);
+                    if (!asp.actividades) asp.actividades = [];
+                    asp.actividades.push({ id: res.id, ...payload });
+                    
+                    closeModal('activityModal');
+                    document.getElementById('formActFecha').value = "";
+                    document.getElementById('formActTitulo').value = "";
+                    document.getElementById('formActDesc').value = "";
+                    document.getElementById('formActAsistentes').value = "";   // <-- LIMPIAR NUEVO
+                    document.getElementById('formActUbicacion').value = "";    // <-- LIMPIAR NUEVO
+                    document.getElementById('formActAnfitriones').value = "";  // <-- LIMPIAR NUEVO
+                    renderDetail();
+                } else { alert("Error del servidor: " + (res ? res.mensaje : "Error desconocido al guardar.")); }
+            } catch(e) { alert("Error de conexión. Revisa que tu Apps Script tenga la función 'guardarActividad'."); } finally { hideLoading(); }
+        }
+
+        // --- FUNCIÓN PARA OBTENER COORDENADAS GPS ---
+        function obtenerUbicacion() {
+            const inputUbicacion = document.getElementById('formActUbicacion');
+            
+            if (!navigator.geolocation) {
+                alert("La geolocalización no es compatible con tu navegador.");
+                return;
+            }
+
+            // Damos feedback visual al usuario mientras busca la señal
+            const placeholderOriginal = inputUbicacion.placeholder;
+            inputUbicacion.placeholder = "Buscando satélites...";
+            inputUbicacion.value = ""; 
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // Si tiene éxito, extraemos latitud y longitud a 6 decimales
+                    const lat = position.coords.latitude.toFixed(6);
+                    const lon = position.coords.longitude.toFixed(6);
+                    inputUbicacion.value = `${lat}, ${lon}`;
+                    inputUbicacion.placeholder = placeholderOriginal;
+                },
+                (error) => {
+                    // Manejo de errores si el usuario deniega el permiso o falla el GPS
+                    inputUbicacion.placeholder = placeholderOriginal;
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            alert("Permiso denegado. Activa el GPS de tu celular y permite que el navegador acceda a tu ubicación.");
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            alert("La información de ubicación no está disponible en este momento.");
+                            break;
+                        case error.TIMEOUT:
+                            alert("Se agotó el tiempo para obtener la ubicación. Intenta en un lugar más abierto.");
+                            break;
+                        default:
+                            alert("Ocurrió un error desconocido al obtener la ubicación.");
+                            break;
+                    }
+                },
+                {
+                    enableHighAccuracy: true, // Fuerza a usar el chip GPS real y no solo la red Wi-Fi
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        async function processPublicationForm() {
+            const payload = {
+                idAspirante: appState.selectedAspiranteId,
+                plataforma: document.getElementById('formPubPlataforma').value,
+                fecha: document.getElementById('formPubFecha').value,
+                contenido: document.getElementById('formPubContenido').value,
+                url: document.getElementById('formPubUrl').value
+            };
+
+            // Validación
+            if(!payload.fecha || !payload.contenido) {
+                alert("La fecha y el resumen son obligatorios.");
+                return;
+            }
+
+            try {
+                showLoading('Guardando publicación...');
+                const res = await postData({ accion: 'guardarPublicacion', publicacion: payload });
+                
+                if (res && res.exito) {
+                    const asp = appState.aspirantes.find(a => a.id === payload.idAspirante);
+                    if (!asp.publicaciones) asp.publicaciones = [];
+                    asp.publicaciones.push({ id: res.id, ...payload });
+                    
+                    closeModal('publicationModal');
+                    document.getElementById('formPubPlataforma').value = "Facebook";
+                    document.getElementById('formPubFecha').value = "";
+                    document.getElementById('formPubContenido').value = "";
+                    document.getElementById('formPubUrl').value = "";
+                    renderDetail();
+                } else {
+                    alert("Error del servidor: " + (res ? res.mensaje : "Error desconocido al guardar."));
+                }
+            } catch(e) {
+                alert("Error de conexión. Revisa que tu Apps Script tenga la función 'guardarPublicacion'.");
+                console.error(e);
+            } finally {
+                hideLoading();
+            }
+        }
+
+    function exportarFichaPDF() {
+            // Mostrar mensaje de carga (opcional)
+            showLoading('Generando archivo PDF...');
+
+            // Seleccionar el área que queremos imprimir (toda la vista de detalle)
+            const elemento = document.getElementById('detailView');
+            
+            // Ocultar temporalmente los botones que no queremos que salgan en el PDF
+            const botones = elemento.querySelectorAll('button');
+            botones.forEach(btn => btn.style.display = 'none');
+
+            // Obtener el nombre del aspirante para el nombre del archivo
+            const nombreAspirante = document.getElementById('detailName').innerText || 'Aspirante';
+            const nombreArchivo = `Ficha_${nombreAspirante.replace(/\s+/g, '_')}.pdf`;
+
+            // Configuración para la librería html2pdf
+            const opciones = {
+                margin:       10, // Margen en mm
+                filename:     nombreArchivo,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true }, // scale: 2 mejora la calidad, useCORS permite cargar imágenes externas
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Ejecutar la generación del PDF
+            html2pdf().set(opciones).from(elemento).save().then(() => {
+                // Volver a mostrar los botones después de descargar el PDF
+                botones.forEach(btn => btn.style.display = '');
+                hideLoading();
+            }).catch(error => {
+                console.error('Error al generar PDF:', error);
+                alert('Ocurrió un error al generar el PDF.');
+                botones.forEach(btn => btn.style.display = ''); // Asegurarse de restaurar botones
+                hideLoading();
+            });
+        }
+
+        // --- FUNCIÓN PARA EXPORTAR EL DASHBOARD A PDF (MÉTODO DE INTERCAMBIO) ---
+        function exportarDashboardPDF() {
+            showLoading('Generando reporte PDF...');
+
+            // 1. Obtener la cuadrícula actual y el texto del contador
+            const gridOriginal = document.getElementById('profilesGrid');
+            const textoContador = document.getElementById('totalCount').innerText;
+            
+            // 2. Crear un contenedor visible pero protegido por la pantalla de carga
+            const printContainer = document.createElement('div');
+            printContainer.id = 'printContainer';
+            printContainer.style.width = '800px'; // Ancho estandarizado para tamaño A4
+            printContainer.style.margin = '0 auto';
+            printContainer.style.backgroundColor = '#f3f4f6'; // Fondo gris claro
+            printContainer.style.padding = '20px';
+            
+            // Construir encabezado elegante
+            printContainer.innerHTML = `
+                <div style="margin-bottom: 20px; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
+                    <h1 style="font-size: 24px; font-weight: bold; color: #1f2937; margin: 0;">Reporte de Aspirantes</h1>
+                    <p style="font-size: 14px; color: #4b5563; margin-top: 5px;">Filtro aplicado: ${textoContador}</p>
+                </div>
+                <div id="printGrid" style="display: flex; flex-direction: column; gap: 16px;"></div>
+            `;
+
+            const printGrid = printContainer.querySelector('#printGrid');
+
+            // 3. Clonar cada tarjeta y apilarla verticalmente
+            Array.from(gridOriginal.children).forEach(tarjeta => {
+                const clon = tarjeta.cloneNode(true);
+                // Quitamos efectos visuales web y forzamos el diseño de bloque
+                clon.className = "bg-white rounded-lg border border-gray-200 overflow-hidden"; 
+                clon.style.width = "100%";
+                clon.style.pageBreakInside = "avoid"; // Evita recortes a la mitad
+                printGrid.appendChild(clon);
+            });
+
+            // 4. Intercambiar la vista: Ocultamos el dashboard real y mostramos el de impresión
+            const dashboard = document.getElementById('dashboardView');
+            dashboard.style.display = 'none';
+            document.body.appendChild(printContainer);
+
+            // Forzamos el scroll arriba para que la "foto" inicie desde el píxel 0
+            window.scrollTo(0, 0);
+
+            // 5. Configurar html2pdf
+            const opciones = {
+                margin:       10,
+                filename:     'Reporte_Aspirantes.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
+            };
+
+            // 6. Generar el documento y regresar todo a la normalidad
+            html2pdf().set(opciones).from(printContainer).save().then(() => {
+                document.body.removeChild(printContainer);
+                dashboard.style.display = '';
+                hideLoading();
+            }).catch(error => {
+                console.error('Error al generar PDF:', error);
+                alert('Ocurrió un error al generar el PDF.');
+                document.body.removeChild(printContainer);
+                dashboard.style.display = '';
+                hideLoading();
+            });
+        }
+
+        // --- FUNCIÓN PARA ELIMINAR ASPIRANTE (SOLO ADMIN) ---
+        async function confirmDelete() {
+            if(confirm("¡ATENCIÓN!\n\n¿Estás seguro de que deseas eliminar definitivamente a este aspirante? Esta acción NO se puede deshacer.")) {
+                showLoading("Eliminando registro...");
+                try {
+                    const res = await postData({ accion: 'eliminarAspirante', id: appState.selectedAspiranteId });
+                    if(res.exito) {
+                        // Lo quitamos de la memoria de la app y volvemos al inicio
+                        appState.aspirantes = appState.aspirantes.filter(a => a.id !== appState.selectedAspiranteId);
+                        goHome();
+                    } else {
+                        alert("Hubo un problema al eliminar el registro.");
+                    }
+                } catch(e) {
+                    alert("Error de conexión con el servidor.");
+                } finally {
+                    hideLoading();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
