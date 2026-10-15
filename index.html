@@ -120,7 +120,6 @@
                     </div>
                 </div>
 
-                <!-- SUBFILTROS DINÁMICOS Y BOTÓN LIMPIAR -->
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mt-4">
                     <div id="containerSubFiltros" class="hidden bg-gray-50 p-3 rounded-md border border-gray-200 w-full md:w-2/3 mb-3 md:mb-0">
                         <div class="flex items-center">
@@ -153,7 +152,7 @@
             <!-- Ficha de Perfil -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6 relative">
                 <div class="absolute top-4 right-4 flex space-x-3">
-                    <button id="btnDeleteProfile" onclick="confirmDelete()" class="text-gray-400 hover:text-red-600 transition hidden" title="Eliminar Aspirante">
+                    <button id="btnDeleteProfile" onclick="confirmDelete()" class="text-gray-400 hover:text-red-600 transition hidden" title="Eliminar Aspirante Completamente">
                         <i class="fas fa-trash-alt text-xl"></i>
                     </button>
                     <button id="btnEditProfile" onclick="openEditModal()" class="text-gray-400 hover:text-blue-600 transition hidden" title="Editar Perfil">
@@ -183,11 +182,11 @@
             <!-- Panel de Línea de tiempo y Medios -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white rounded-lg shadow-md p-6">
-                    <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-gray-800 border-b-2 border-blue-600 pb-2 inline-block">Línea de Tiempo</h3><button id="btnNewActivity" onclick="openModal('activityModal')" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded shadow-sm transition hidden"><i class="fas fa-plus mr-1"></i> Actividad</button></div>
+                    <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-gray-800 border-b-2 border-blue-600 pb-2 inline-block">Línea de Tiempo</h3><button id="btnNewActivity" onclick="prepareNewActivity()" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded shadow-sm transition hidden"><i class="fas fa-plus mr-1"></i> Actividad</button></div>
                     <div id="timelineContainer" class="relative border-l-2 border-gray-200 ml-3 space-y-6"></div>
                 </div>
                 <div class="bg-white rounded-lg shadow-md p-6">
-                    <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-gray-800 border-b-2 border-indigo-600 pb-2 inline-block">Monitoreo de Medios</h3><button id="btnNewPublication" onclick="openModal('publicationModal')" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded shadow-sm transition hidden"><i class="fas fa-plus mr-1"></i> Publicación</button></div>
+                    <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-gray-800 border-b-2 border-indigo-600 pb-2 inline-block">Monitoreo de Medios</h3><button id="btnNewPublication" onclick="prepareNewPublication()" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded shadow-sm transition hidden"><i class="fas fa-plus mr-1"></i> Publicación</button></div>
                     <div id="mediaContainer" class="space-y-4"></div>
                 </div>
             </div>
@@ -203,7 +202,7 @@
         </div>
     </main>
 
-    <!-- Modales -->
+    <!-- Modal de Perfil (Crear/Editar) -->
     <div id="addModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50"><h3 id="profileModalTitle" class="text-lg font-semibold text-gray-800">Registrar Nuevo Aspirante</h3></div>
@@ -267,7 +266,7 @@
             <div class="px-6 py-4 border-b border-gray-200"><h3 class="text-lg font-semibold text-gray-800">Registrar Actividad</h3></div>
             <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label><input type="text" id="formActFecha" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label><input type="date" id="formActFecha" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Asistentes (Aprox.)</label><input type="number" id="formActAsistentes" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Ej. 150"></div>
                 </div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Título del Evento</label><input type="text" id="formActTitulo" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
@@ -294,7 +293,7 @@
             <div class="px-6 py-4 border-b border-gray-200"><h3 class="text-lg font-semibold text-gray-800">Agregar al Monitoreo</h3></div>
             <div class="p-6 space-y-4">
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Plataforma</label><select id="formPubPlataforma" class="w-full border border-gray-300 rounded-md px-3 py-2"><option value="Facebook">Facebook</option><option value="X">X (Twitter)</option><option value="Instagram">Instagram</option><option value="TikTok">TikTok</option><option value="Noticia">Noticia</option><option value="Otro">Otro</option></select></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label><input type="text" id="formPubFecha" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label><input type="date" id="formPubFecha" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Resumen</label><textarea id="formPubContenido" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">URL (Opcional)</label><input type="url" id="formPubUrl" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
             </div>
@@ -769,6 +768,30 @@
             } catch(e) { alert("Error al guardar."); } finally { hideLoading(); }
         }
 
+        // --- FUNCIONES PARA INYECTAR LA FECHA DE HOY ---
+        function getTodayDateString() {
+            const tzOffset = (new Date()).getTimezoneOffset() * 60000; 
+            return new Date(Date.now() - tzOffset).toISOString().split('T')[0];
+        }
+
+        function prepareNewActivity() {
+            document.getElementById('formActFecha').value = getTodayDateString();
+            document.getElementById('formActAsistentes').value = "";
+            document.getElementById('formActTitulo').value = "";
+            document.getElementById('formActUbicacion').value = "";
+            document.getElementById('formActAnfitriones').value = "";
+            document.getElementById('formActDesc').value = "";
+            openModal('activityModal');
+        }
+
+        function prepareNewPublication() {
+            document.getElementById('formPubPlataforma').value = "Facebook";
+            document.getElementById('formPubFecha').value = getTodayDateString();
+            document.getElementById('formPubContenido').value = "";
+            document.getElementById('formPubUrl').value = "";
+            openModal('publicationModal');
+        }
+
         async function processActivityForm() {
             const payload = {
                 idAspirante: appState.selectedAspiranteId,
@@ -796,12 +819,6 @@
                     asp.actividades.push({ id: res.id, ...payload });
                     
                     closeModal('activityModal');
-                    document.getElementById('formActFecha').value = "";
-                    document.getElementById('formActTitulo').value = "";
-                    document.getElementById('formActDesc').value = "";
-                    document.getElementById('formActAsistentes').value = "";   
-                    document.getElementById('formActUbicacion').value = "";    
-                    document.getElementById('formActAnfitriones').value = "";  
                     renderDetail();
                 } else { alert("Error del servidor: " + (res ? res.mensaje : "Error desconocido al guardar.")); }
             } catch(e) { alert("Error de conexión. Revisa que tu Apps Script tenga la función 'guardarActividad'."); } finally { hideLoading(); }
@@ -879,10 +896,6 @@
                     asp.publicaciones.push({ id: res.id, ...payload });
                     
                     closeModal('publicationModal');
-                    document.getElementById('formPubPlataforma').value = "Facebook";
-                    document.getElementById('formPubFecha').value = "";
-                    document.getElementById('formPubContenido').value = "";
-                    document.getElementById('formPubUrl').value = "";
                     renderDetail();
                 } else {
                     alert("Error del servidor: " + (res ? res.mensaje : "Error desconocido al guardar."));
