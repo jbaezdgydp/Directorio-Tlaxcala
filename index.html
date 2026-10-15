@@ -8,11 +8,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
-    <!-- LIBRERÍAS DE MAPA (Leaflet & Heatmap) -->
+    <!-- LIBRERÍAS DE MAPA NATIVO LEAFLET -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-    <!-- Servidor más estable para el mapa de calor -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
 </head>
 <body class="bg-gray-100 font-sans antialiased text-gray-800">
 
@@ -128,7 +126,6 @@
                         <div class="flex items-center">
                             <label id="labelSubFiltro" class="block text-xs font-bold text-gray-600 uppercase mr-3 whitespace-nowrap">Detalle Adicional</label>
                             <select id="filterDetalleCargo" onchange="render()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <!-- Opciones inyectadas por JS -->
                             </select>
                         </div>
                     </div>
@@ -137,7 +134,7 @@
                         <i class="fas fa-eraser mr-2"></i> Quitar Filtros
                     </button>
                 </div>
-            </div> <!-- Fin de seccionFiltros -->
+            </div>
 
             <div id="profilesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
@@ -156,7 +153,7 @@
             <!-- Ficha de Perfil -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6 relative">
                 <div class="absolute top-4 right-4 flex space-x-3">
-                    <button id="btnDeleteProfile" onclick="confirmDelete()" class="text-gray-400 hover:text-red-600 transition hidden" title="Eliminar Aspirante Completamente">
+                    <button id="btnDeleteProfile" onclick="confirmDelete()" class="text-gray-400 hover:text-red-600 transition hidden" title="Eliminar Aspirante">
                         <i class="fas fa-trash-alt text-xl"></i>
                     </button>
                     <button id="btnEditProfile" onclick="openEditModal()" class="text-gray-400 hover:text-blue-600 transition hidden" title="Editar Perfil">
@@ -185,12 +182,10 @@
 
             <!-- Panel de Línea de tiempo y Medios -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Línea de Tiempo -->
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-gray-800 border-b-2 border-blue-600 pb-2 inline-block">Línea de Tiempo</h3><button id="btnNewActivity" onclick="openModal('activityModal')" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded shadow-sm transition hidden"><i class="fas fa-plus mr-1"></i> Actividad</button></div>
                     <div id="timelineContainer" class="relative border-l-2 border-gray-200 ml-3 space-y-6"></div>
                 </div>
-                <!-- Monitoreo de Medios -->
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-gray-800 border-b-2 border-indigo-600 pb-2 inline-block">Monitoreo de Medios</h3><button id="btnNewPublication" onclick="openModal('publicationModal')" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded shadow-sm transition hidden"><i class="fas fa-plus mr-1"></i> Publicación</button></div>
                     <div id="mediaContainer" class="space-y-4"></div>
@@ -203,65 +198,41 @@
                     <h3 class="text-xl font-bold text-gray-800 border-b-2 border-green-600 pb-2 inline-block">Mapa de Actividad Territorial</h3>
                 </div>
                 <p class="text-sm text-gray-500 mb-4">Las manchas de calor indican eventos con mayor concentración de asistentes. Haz clic en las chinchetas azules para ver detalles.</p>
-                <!-- Contenedor crítico para Leaflet -->
                 <div id="mapContainer" class="w-full h-[400px] rounded-md border border-gray-300 z-10 relative bg-gray-50"></div>
             </div>
         </div>
     </main>
 
-    <!-- Modal de Perfil (Crear/Editar) -->
+    <!-- Modales -->
     <div id="addModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <h3 id="profileModalTitle" class="text-lg font-semibold text-gray-800">Registrar Nuevo Aspirante</h3>
-            </div>
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50"><h3 id="profileModalTitle" class="text-lg font-semibold text-gray-800">Registrar Nuevo Aspirante</h3></div>
             <div class="p-6 overflow-y-auto max-h-[75vh]">
                 <input type="hidden" id="formProfileId">
                 <div class="space-y-4">
-                    
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Fotografía (PNG o JPG)</label>
                         <div class="flex items-center space-x-4">
                             <div class="h-16 w-16 rounded-full bg-gray-200 border border-gray-300 overflow-hidden flex items-center justify-center shrink-0">
-                                <img id="fotoPreview" src="" class="hidden h-full w-full object-cover">
-                                <i id="fotoIcon" class="fas fa-camera text-gray-400 text-xl"></i>
+                                <img id="fotoPreview" src="" class="hidden h-full w-full object-cover"><i id="fotoIcon" class="fas fa-camera text-gray-400 text-xl"></i>
                             </div>
                             <input type="file" id="formFoto" accept="image/png, image/jpeg" onchange="previewImage(event)" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full">
                         </div>
                     </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
-                        <input type="text" id="formNombre" class="w-full border border-gray-300 rounded-md px-3 py-2">
-                    </div>
-                    
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label><input type="text" id="formNombre" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- CARGO CON MENÚS DINÁMICOS -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Cargo al que aspira</label>
                             <select id="formCargo" onchange="handleCargoChange()" class="w-full border border-gray-300 rounded-md px-3 py-2 mb-2">
-                                <option value="">Selecciona un cargo...</option>
-                                <option value="Gobernador">Gobernador</option>
-                                <option value="Diputado Federal">Diputado Federal</option>
-                                <option value="Diputado Local">Diputado Local</option>
-                                <option value="Presidente Municipal">Presidente Municipal</option>
-                                <option value="Presidente de Comunidad">Presidente de Comunidad</option>
+                                <option value="">Selecciona un cargo...</option><option value="Gobernador">Gobernador</option><option value="Diputado Federal">Diputado Federal</option><option value="Diputado Local">Diputado Local</option><option value="Presidente Municipal">Presidente Municipal</option><option value="Presidente de Comunidad">Presidente de Comunidad</option>
                             </select>
-                            
-                            <!-- Submenú que se oculta/muestra automáticamente -->
                             <div id="containerDetalleCargo" class="hidden bg-blue-50 p-2 rounded border border-blue-100">
                                 <label id="labelDetalleCargo" class="block text-xs font-bold text-blue-700 uppercase mb-1">Detalle</label>
                                 <select id="formDetalleCargo" class="w-full border border-gray-300 rounded-md px-3 py-1 text-sm mb-2 hidden"></select>
-                                
-                                <!-- Nuevo selector de municipio exclusivo para Presidentes de Comunidad -->
-                                <div id="containerMunicipioComunidad" class="hidden w-full mb-2">
-                                    <select id="formMunicipioComunidad" class="w-full border border-gray-300 rounded-md px-3 py-1 text-sm mb-1"></select>
-                                </div>
-                                
+                                <div id="containerMunicipioComunidad" class="hidden w-full mb-2"><select id="formMunicipioComunidad" class="w-full border border-gray-300 rounded-md px-3 py-1 text-sm mb-1"></select></div>
                                 <input type="text" id="formDetalleCargoText" class="w-full border border-gray-300 rounded-md px-3 py-1 text-sm hidden" placeholder="Ej. San Bartolomé">
                             </div>
                         </div>
-
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Etapa del Proceso</label>
                             <select id="formEtapa" class="w-full border border-gray-300 rounded-md px-3 py-2">
@@ -269,7 +240,6 @@
                             </select>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Partido Político</label>
@@ -277,18 +247,9 @@
                                 <option value="">Selecciona un partido...</option><option value="MORENA">MORENA</option><option value="PAN">PAN</option><option value="PRI">PRI</option><option value="PT">PT</option><option value="MC">MC</option><option value="PVEM">PVEM</option><option value="PAC">PAC</option><option value="RSP">RSP</option><option value="PRDT">PRDT</option><option value="FXM">FXM</option><option value="SOMOS MÉXICO">SOMOS MÉXICO</option><option value="PAZ">PAZ</option><option value="NUEVA ALIANZA">NUEVA ALIANZA</option><option value="INDEPENDIENTE">INDEPENDIENTE</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Número Telefónico</label>
-                            <input type="tel" id="formTelefono" class="w-full border border-gray-300 rounded-md px-3 py-2">
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Número Telefónico</label><input type="tel" id="formTelefono" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
                     </div>
-
-                    <!-- NUEVO CAMPO: Redes Sociales -->
-                    <div class="col-span-1 md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Redes Sociales (Enlaces)</label>
-                        <input type="text" id="formRedes" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. https://facebook.com/candidato, https://x.com/candidato">
-                    </div>
-
+                    <div class="col-span-1 md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Redes Sociales (Enlaces)</label><input type="text" id="formRedes" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. https://facebook.com/candidato"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Biografía Breve</label><textarea id="formBio" rows="2" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Observaciones</label><textarea id="formObservaciones" rows="2" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea></div>
                 </div>
@@ -300,12 +261,10 @@
         </div>
     </div>
 
-    <!-- Modales de Actividad y Monitoreo (Minimizados) -->
+    <!-- Actividad -->
     <div id="activityModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-800">Registrar Actividad</h3>
-            </div>
+            <div class="px-6 py-4 border-b border-gray-200"><h3 class="text-lg font-semibold text-gray-800">Registrar Actividad</h3></div>
             <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label><input type="text" id="formActFecha" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
@@ -316,9 +275,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación (Coordenadas/Lugar)</label>
                     <div class="flex items-center space-x-2">
                         <input type="text" id="formActUbicacion" class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. 19.316, -98.238">
-                        <button type="button" onclick="obtenerUbicacion()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-md transition border border-blue-200" title="Obtener mi ubicación actual">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </button>
+                        <button type="button" onclick="obtenerUbicacion()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-md transition border border-blue-200" title="Obtener mi ubicación actual"><i class="fas fa-map-marker-alt"></i></button>
                     </div>
                 </div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Anfitrión(es)</label><input type="text" id="formActAnfitriones" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Ej. Juan Pérez"></div>
@@ -330,16 +287,30 @@
             </div>
         </div>
     </div>
-    <div id="publicationModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center"><div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden"><div class="px-6 py-4 border-b border-gray-200"><h3 class="text-lg font-semibold text-gray-800">Agregar al Monitoreo</h3></div><div class="p-6 space-y-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Plataforma</label><select id="formPubPlataforma" class="w-full border border-gray-300 rounded-md px-3 py-2"><option value="Facebook">Facebook</option><option value="X">X (Twitter)</option><option value="Instagram">Instagram</option><option value="TikTok">TikTok</option><option value="Noticia">Noticia</option><option value="Otro">Otro</option></select></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label><input type="text" id="formPubFecha" class="w-full border border-gray-300 rounded-md px-3 py-2"></div><div><label class="block text-sm font-medium text-gray-700 mb-1">Resumen</label><textarea id="formPubContenido" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea></div><div><label class="block text-sm font-medium text-gray-700 mb-1">URL (Opcional)</label><input type="url" id="formPubUrl" class="w-full border border-gray-300 rounded-md px-3 py-2"></div></div><div class="px-6 py-4 bg-gray-50 text-right space-x-3"><button onclick="closeModal('publicationModal')" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md">Cancelar</button><button onclick="processPublicationForm()" class="px-4 py-2 bg-indigo-600 text-white rounded-md">Guardar</button></div></div></div>
+
+    <!-- Publicación -->
+    <div id="publicationModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200"><h3 class="text-lg font-semibold text-gray-800">Agregar al Monitoreo</h3></div>
+            <div class="p-6 space-y-4">
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Plataforma</label><select id="formPubPlataforma" class="w-full border border-gray-300 rounded-md px-3 py-2"><option value="Facebook">Facebook</option><option value="X">X (Twitter)</option><option value="Instagram">Instagram</option><option value="TikTok">TikTok</option><option value="Noticia">Noticia</option><option value="Otro">Otro</option></select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label><input type="text" id="formPubFecha" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Resumen</label><textarea id="formPubContenido" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">URL (Opcional)</label><input type="url" id="formPubUrl" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 text-right space-x-3">
+                <button onclick="closeModal('publicationModal')" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md">Cancelar</button>
+                <button onclick="processPublicationForm()" class="px-4 py-2 bg-indigo-600 text-white rounded-md">Guardar</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // ¡IMPORTANTE! REEMPLAZA ESTA URL CON LA QUE TE DIO APPS SCRIPT
         const API_URL = "https://script.google.com/macros/s/AKfycbziWi8t2n_Q1sqB1UPZJOB4F3HqMJGW7JdhoTrCFDuYSXMgkIu_aPhjDAIACaLkMYlBSQ/exec";
 
         let appState = { aspirantes: [], currentView: 'dashboard', selectedAspiranteId: null, isReadOnly: true, role: 'guest', sessionPassword: null, mapInstance: null };
         let currentBase64Image = null; 
 
-        // LISTAS DE DISTRITOS Y MUNICIPIOS
         const MUNICIPIOS = ["Acuamanala de Miguel Hidalgo", "Amaxac de Guerrero", "Apetatitlán de Antonio Carvajal", "Apizaco", "Atlangatepec", "Atltzayanca", "Benito Juárez", "Calpulalpan", "Chiautempan", "Contla de Juan Cuamatzi", "Cuapiaxtla", "Cuaxomulco", "El Carmen Tequexquitla", "Emiliano Zapata", "Españita", "Huamantla", "Hueyotlipan", "Ixtacuixtla de Mariano Matamoros", "Ixtenco", "La Magdalena Tlaltelulco", "Lázaro Cárdenas", "Mazatecochco de José María Morelos", "Muñoz de Domingo Arenas", "Nanacamilpa de Mariano Arista", "Natívitas", "Panotla", "Papalotla de Xicohténcatl", "San Damián Texóloc", "San Francisco Tetlanohcan", "San Jerónimo Zacualpan", "San José Teacalco", "San Juan Huactzinco", "San Lorenzo Axocomanitla", "San Lucas Tecopilco", "San Pablo del Monte", "Sanctórum de Lázaro Cárdenas", "Santa Ana Nopalucan", "Santa Apolonia Teacalco", "Santa Catarina Ayometla", "Santa Cruz Quilehtla", "Santa Cruz Tlaxcala", "Santa Isabel Xiloxoxtla", "Tenancingo", "Teolocholco", "Tepetitla de Lardizábal", "Tepeyanco", "Terrenate", "Tetla de la Solidaridad", "Tetlatlahuca", "Tlaxcala", "Tlaxco", "Tocatlán", "Totolac", "Tzompantepec", "Xaloztoc", "Xaltocan", "Xicohtzinco", "Yauhquemehcan", "Zacatelco", "Ziltlaltépec de Trinidad Sánchez Santos"];
         const FED_DISTRITOS = ["I", "II", "III"];
         const LOC_DISTRITOS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV"];
@@ -413,7 +384,6 @@
             }
         }
 
-        // --- SISTEMA DE ACCESO ---
         let loginRoleTarget = 'admin'; 
 
         function enterAsGuest() { 
@@ -579,7 +549,6 @@
                 divRedes.innerHTML = `<span class="text-gray-400 italic">No registradas</span>`;
             }
 
-            // LIMPIAR MAPA ANTERIOR
             const mapDiv = document.getElementById('mapContainer');
             if (appState.mapInstance) {
                 appState.mapInstance.remove();
@@ -588,7 +557,6 @@
 
             const tl = document.getElementById('timelineContainer'); tl.innerHTML = '';
             
-            // ARREGLOS PARA EL MAPA
             let heatPoints = [];
             let markers = [];
 
@@ -609,14 +577,12 @@
                                 const lng = parseFloat(coordsMatch[2]);
                                 
                                 if (!isNaN(lat) && !isNaN(lng)) {
-                                    // CORRECCIÓN MATEMÁTICA: Usar el número exacto de asistentes
-                                    let cantidadAsistentes = 50; // Valor base mínimo
+                                    let cantidadAsistentes = 50; 
                                     if (act.asistentes && !isNaN(parseInt(act.asistentes))) {
                                         cantidadAsistentes = parseInt(act.asistentes); 
                                     }
-                                    
-                                    heatPoints.push([lat, lng, cantidadAsistentes]);
-                                    markers.push({ lat: lat, lng: lng, title: act.titulo, date: act.fecha, asistentes: cantidadAsistentes });
+                                    heatPoints.push([lat, lng]); 
+                                    markers.push({lat: lat, lng: lng, title: act.titulo, date: act.fecha, asistentes: cantidadAsistentes});
                                 }
                             }
                             
@@ -630,7 +596,6 @@
                 });
             }
 
-           // CREACIÓN DEL MAPA DE CALOR (NATIVO LEAFLET)
             if (heatPoints.length > 0) {
                 mapDiv.innerHTML = '';
                 mapDiv.className = "w-full h-[400px] rounded-md border border-gray-300 z-10 relative";
@@ -641,24 +606,21 @@
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(appState.mapInstance);
 
-                // Función auxiliar para color e intensidad según asistentes
                 function obtenerEstiloCalor(asistentes) {
                     if (asistentes >= 300) {
-                        return { radio: 900, color: '#ef4444', relleno: '#dc2626', opacidad: 0.5 }; // Rojo intenso
+                        return { radio: 900, color: '#ef4444', relleno: '#dc2626', opacidad: 0.5 }; 
                     } else if (asistentes >= 100) {
-                        return { radio: 650, color: '#f59e0b', relleno: '#d97706', opacidad: 0.45 }; // Ámbar / Naranja
+                        return { radio: 650, color: '#f59e0b', relleno: '#d97706', opacidad: 0.45 }; 
                     } else if (asistentes >= 40) {
-                        return { radio: 450, color: '#10b981', relleno: '#059669', opacidad: 0.4 }; // Verde
+                        return { radio: 450, color: '#10b981', relleno: '#059669', opacidad: 0.4 }; 
                     } else {
-                        return { radio: 300, color: '#3b82f6', relleno: '#2563eb', opacidad: 0.35 }; // Azul
+                        return { radio: 300, color: '#3b82f6', relleno: '#2563eb', opacidad: 0.35 }; 
                     }
                 }
 
-                // Dibujar halos de calor y marcadores
                 markers.forEach(m => {
                     const estilo = obtenerEstiloCalor(m.asistentes);
 
-                    // 1. Halo exterior difuminado (zona de influencia)
                     L.circle([m.lat, m.lng], {
                         radius: estilo.radio * 1.5,
                         color: estilo.color,
@@ -668,7 +630,6 @@
                         interactive: false
                     }).addTo(appState.mapInstance);
 
-                    // 2. Núcleo de calor principal
                     L.circle([m.lat, m.lng], {
                         radius: estilo.radio,
                         color: estilo.color,
@@ -678,13 +639,11 @@
                         interactive: false
                     }).addTo(appState.mapInstance);
 
-                    // 3. Marcador / Chincheta con popup informativo
                     L.marker([m.lat, m.lng])
                         .addTo(appState.mapInstance)
                         .bindPopup(`<b>${m.title}</b><br><span class="text-xs text-gray-500">${m.date}</span><br><b>Asistentes:</b> ${m.asistentes}`);
                 });
                 
-                // Ajustar encuadre si hay múltiples puntos
                 if (heatPoints.length > 1) {
                     const bounds = L.latLngBounds(heatPoints.map(p => [p[0], p[1]]));
                     appState.mapInstance.fitBounds(bounds, { padding: [40, 40] });
@@ -697,7 +656,10 @@
                 mapDiv.innerHTML = `<span class="text-gray-400 italic"><i class="fas fa-map-marker-alt mr-2 text-gray-300"></i>Aún no hay coordenadas exactas registradas para mapear.</span>`;
             }
 
-        // --- FORMULARIOS ---
+            const media = document.getElementById('mediaContainer'); media.innerHTML = '';
+            if(!asp.publicaciones || asp.publicaciones.length === 0) media.innerHTML = '<p class="text-sm text-gray-500 italic">No hay publicaciones registradas.</p>'; else asp.publicaciones.forEach(pub => { let icon = 'fa-globe'; if(pub.plataforma.toLowerCase() === 'facebook') icon = 'fa-facebook text-blue-600'; if(pub.plataforma.toLowerCase() === 'x') icon = 'fa-x-twitter text-black'; if(pub.plataforma.toLowerCase() === 'instagram') icon = 'fa-instagram text-pink-600'; let urlHtml = pub.url ? `<a href="${pub.url}" target="_blank" class="text-xs text-blue-600 hover:underline mt-2 inline-block"><i class="fas fa-external-link-alt mr-1"></i>Ver</a>` : ''; media.innerHTML += `<div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm"><div class="flex justify-between items-start mb-2"><div class="flex items-center"><i class="fab ${icon} text-lg mr-2"></i><span class="font-bold text-sm">${pub.plataforma}</span></div><span class="text-xs text-gray-500">${pub.fecha}</span></div><p class="text-sm text-gray-700 italic">"${pub.contenido}"</p>${urlHtml}</div>`; });
+        }
+
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         function previewImage(event) {
