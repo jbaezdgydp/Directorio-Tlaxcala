@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Aquí tienes el archivo index.html completo y actualizado con el blindaje de seguridad. Ya incluye la memoria de la contraseña en el estado global y la inyección automática de esa contraseña en todas las peticiones de guardado, actualización y borrado de la base de datos.   Puedes copiar todo este bloque y reemplazar el contenido de tu archivo en GitHub:HTML<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -331,7 +331,8 @@
         // ¡IMPORTANTE! REEMPLAZA ESTA URL CON LA QUE TE DIO APPS SCRIPT
         const API_URL = "https://script.google.com/macros/s/AKfycbziWi8t2n_Q1sqB1UPZJOB4F3HqMJGW7JdhoTrCFDuYSXMgkIu_aPhjDAIACaLkMYlBSQ/exec";
 
-        let appState = { aspirantes: [], currentView: 'dashboard', selectedAspiranteId: null, isReadOnly: true, role: 'guest' };
+        // <-- AÑADIDO: sessionPassword para recordar la clave de forma segura en cada sesión
+        let appState = { aspirantes: [], currentView: 'dashboard', selectedAspiranteId: null, isReadOnly: true, role: 'guest', sessionPassword: null };
         let currentBase64Image = null; 
 
         // LISTAS DE DISTRITOS Y MUNICIPIOS
@@ -456,7 +457,8 @@
                 
                 if (res && res.exito) { 
                     appState.isReadOnly = false; 
-                    appState.role = res.rol; // El servidor nos confirma si somos admin o editor
+                    appState.role = res.rol; 
+                    appState.sessionPassword = passInput.trim(); // <-- AÑADIDO: Guardar en sesión
                     closeModal('passwordModal'); 
                     document.getElementById('loginOverlay').classList.add('hidden'); 
                     applyPermissions(); 
@@ -719,7 +721,11 @@
             
             try { 
                 showLoading(id ? 'Actualizando...' : 'Guardando... Esto puede tardar si incluye foto.'); 
-                const res = await postData({ accion: id ? 'actualizarAspirante' : 'guardarAspirante', aspirante: { id, ...payload } }); 
+                const res = await postData({ 
+                    accion: id ? 'actualizarAspirante' : 'guardarAspirante', 
+                    password: appState.sessionPassword, // <-- AÑADIDO: Blindaje
+                    aspirante: { id, ...payload } 
+                }); 
                 if(res.exito) { 
                     if(id) { 
                         const idx = appState.aspirantes.findIndex(a => a.id === id); 
@@ -749,7 +755,11 @@
 
             try {
                 showLoading('Guardando actividad...');
-                const res = await postData({ accion: 'guardarActividad', actividad: payload });
+                const res = await postData({ 
+                    accion: 'guardarActividad', 
+                    password: appState.sessionPassword, // <-- AÑADIDO: Blindaje
+                    actividad: payload 
+                });
                 
                 if (res && res.exito) {
                     const asp = appState.aspirantes.find(a => a.id === payload.idAspirante);
@@ -833,7 +843,11 @@
 
             try {
                 showLoading('Guardando publicación...');
-                const res = await postData({ accion: 'guardarPublicacion', publicacion: payload });
+                const res = await postData({ 
+                    accion: 'guardarPublicacion', 
+                    password: appState.sessionPassword, // <-- AÑADIDO: Blindaje
+                    publicacion: payload 
+                });
                 
                 if (res && res.exito) {
                     const asp = appState.aspirantes.find(a => a.id === payload.idAspirante);
@@ -968,7 +982,11 @@
             if(confirm("¡ATENCIÓN!\n\n¿Estás seguro de que deseas eliminar definitivamente a este aspirante? Esta acción NO se puede deshacer.")) {
                 showLoading("Eliminando registro...");
                 try {
-                    const res = await postData({ accion: 'eliminarAspirante', id: appState.selectedAspiranteId });
+                    const res = await postData({ 
+                        accion: 'eliminarAspirante', 
+                        password: appState.sessionPassword, // <-- AÑADIDO: Blindaje
+                        id: appState.selectedAspiranteId 
+                    });
                     if(res.exito) {
                         // Lo quitamos de la memoria de la app y volvemos al inicio
                         appState.aspirantes = appState.aspirantes.filter(a => a.id !== appState.selectedAspiranteId);
