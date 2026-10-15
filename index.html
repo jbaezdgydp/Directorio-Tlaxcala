@@ -630,7 +630,7 @@
                 });
             }
 
-            // CREACIÓN DEL MAPA DE CALOR
+           // CREACIÓN DEL MAPA DE CALOR (NATIVO LEAFLET)
             if (heatPoints.length > 0) {
                 mapDiv.innerHTML = '';
                 mapDiv.className = "w-full h-[400px] rounded-md border border-gray-300 z-10 relative";
@@ -641,21 +641,53 @@
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(appState.mapInstance);
 
-                markers.forEach(m => {
-                    L.marker([m.lat, m.lng]).addTo(appState.mapInstance).bindPopup(`<b>${m.title}</b><br>${m.date}`);
-                });
+                // Función auxiliar para color e intensidad según asistentes
+                function obtenerEstiloCalor(asistentes) {
+                    if (asistentes >= 300) {
+                        return { radio: 900, color: '#ef4444', relleno: '#dc2626', opacidad: 0.5 }; // Rojo intenso
+                    } else if (asistentes >= 100) {
+                        return { radio: 650, color: '#f59e0b', relleno: '#d97706', opacidad: 0.45 }; // Ámbar / Naranja
+                    } else if (asistentes >= 40) {
+                        return { radio: 450, color: '#10b981', relleno: '#059669', opacidad: 0.4 }; // Verde
+                    } else {
+                        return { radio: 300, color: '#3b82f6', relleno: '#2563eb', opacidad: 0.35 }; // Azul
+                    }
+                }
 
-                // CORRECCIÓN MAPA DE CALOR: Radio aumentado y max igualado a la expectativa alta
-                L.heatLayer(heatPoints, {
-                    radius: 40,   // Tamaño más grande
-                    blur: 25,     // Difuminado
-                    max: 500,     // 500 asistentes = Rojo máximo
-                    gradient: {0.2: 'blue', 0.4: 'cyan', 0.6: 'lime', 0.8: 'yellow', 1.0: 'red'}
-                }).addTo(appState.mapInstance);
+                // Dibujar halos de calor y marcadores
+                markers.forEach(m => {
+                    const estilo = obtenerEstiloCalor(m.asistentes);
+
+                    // 1. Halo exterior difuminado (zona de influencia)
+                    L.circle([m.lat, m.lng], {
+                        radius: estilo.radio * 1.5,
+                        color: estilo.color,
+                        weight: 0,
+                        fillColor: estilo.relleno,
+                        fillOpacity: 0.18,
+                        interactive: false
+                    }).addTo(appState.mapInstance);
+
+                    // 2. Núcleo de calor principal
+                    L.circle([m.lat, m.lng], {
+                        radius: estilo.radio,
+                        color: estilo.color,
+                        weight: 1,
+                        fillColor: estilo.relleno,
+                        fillOpacity: estilo.opacidad,
+                        interactive: false
+                    }).addTo(appState.mapInstance);
+
+                    // 3. Marcador / Chincheta con popup informativo
+                    L.marker([m.lat, m.lng])
+                        .addTo(appState.mapInstance)
+                        .bindPopup(`<b>${m.title}</b><br><span class="text-xs text-gray-500">${m.date}</span><br><b>Asistentes:</b> ${m.asistentes}`);
+                });
                 
+                // Ajustar encuadre si hay múltiples puntos
                 if (heatPoints.length > 1) {
                     const bounds = L.latLngBounds(heatPoints.map(p => [p[0], p[1]]));
-                    appState.mapInstance.fitBounds(bounds, {padding: [30, 30]});
+                    appState.mapInstance.fitBounds(bounds, { padding: [40, 40] });
                 }
                 
                 setTimeout(() => { appState.mapInstance.invalidateSize(); }, 200);
@@ -664,10 +696,6 @@
                 mapDiv.className = "w-full h-32 bg-gray-50 rounded-md border border-gray-200 flex items-center justify-center";
                 mapDiv.innerHTML = `<span class="text-gray-400 italic"><i class="fas fa-map-marker-alt mr-2 text-gray-300"></i>Aún no hay coordenadas exactas registradas para mapear.</span>`;
             }
-
-            const media = document.getElementById('mediaContainer'); media.innerHTML = '';
-            if(!asp.publicaciones || asp.publicaciones.length === 0) media.innerHTML = '<p class="text-sm text-gray-500 italic">No hay publicaciones registradas.</p>'; else asp.publicaciones.forEach(pub => { let icon = 'fa-globe'; if(pub.plataforma.toLowerCase() === 'facebook') icon = 'fa-facebook text-blue-600'; if(pub.plataforma.toLowerCase() === 'x') icon = 'fa-x-twitter text-black'; if(pub.plataforma.toLowerCase() === 'instagram') icon = 'fa-instagram text-pink-600'; let urlHtml = pub.url ? `<a href="${pub.url}" target="_blank" class="text-xs text-blue-600 hover:underline mt-2 inline-block"><i class="fas fa-external-link-alt mr-1"></i>Ver</a>` : ''; media.innerHTML += `<div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm"><div class="flex justify-between items-start mb-2"><div class="flex items-center"><i class="fab ${icon} text-lg mr-2"></i><span class="font-bold text-sm">${pub.plataforma}</span></div><span class="text-xs text-gray-500">${pub.fecha}</span></div><p class="text-sm text-gray-700 italic">"${pub.contenido}"</p>${urlHtml}</div>`; });
-        }
 
         // --- FORMULARIOS ---
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
