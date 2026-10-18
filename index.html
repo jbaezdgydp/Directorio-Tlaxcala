@@ -38,10 +38,10 @@
     <div id="passwordModal" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden z-[250] flex justify-center items-center">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <h3 class="text-lg font-semibold text-gray-800"><i class="fas fa-lock mr-2 text-gray-500"></i> Acceso de Administrador</h3>
+                <h3 id="passwordModalTitle" class="text-lg font-semibold text-gray-800"><i class="fas fa-lock mr-2 text-gray-500"></i> Acceso</h3>
             </div>
             <div class="p-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Ingresa la contraseña:</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Ingresa tu contraseña:</label>
                 <input type="password" id="adminPasswordInput" onkeypress="if(event.key === 'Enter') submitPassword()" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="••••••••">
             </div>
             <div class="px-6 py-4 bg-gray-50 text-right space-x-3">
@@ -67,7 +67,8 @@
                     <i class="fas fa-users text-2xl mr-3"></i>
                     <span class="font-bold text-xl tracking-tight">Directorio Electoral</span>
                 </div>
-                <div id="homeBtnContainer">
+                <div class="flex items-center space-x-3">
+                    <span id="userStatusBadge" class="hidden text-xs bg-purple-900 text-purple-200 border border-purple-700 px-3 py-1 rounded-full"></span>
                     <button id="btnNuevoRegistro" onclick="prepareNewProfile()" class="bg-purple-600 hover:bg-pink-500 px-4 py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-sm hidden">
                         <i class="fas fa-plus mr-2"></i>Nuevo Registro
                     </button>
@@ -90,7 +91,7 @@
                 </div>
             </div>
             
-            <!-- ====== SECCIÓN DE FILTROS ====== -->
+            <!-- SECCIÓN DE FILTROS -->
             <div id="seccionFiltros" class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                     <div>
@@ -161,7 +162,7 @@
                 </div>
                 <div class="flex flex-col md:flex-row md:items-center">
                     <div id="detailAvatarContainer"></div>
-                    <div>
+                    <div class="flex-1">
                         <div class="flex items-center space-x-3 mb-2">
                             <h2 id="detailName" class="text-3xl font-bold text-gray-900"></h2>
                             <span id="detailEtapa" class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800"></span>
@@ -173,7 +174,10 @@
                             <div><span class="block text-xs font-bold text-gray-500 uppercase">Teléfono de Contacto</span><p id="detailTelefono" class="text-sm text-gray-800 mt-1"></p></div>
                             <div class="mb-4"><h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Redes Sociales</h3><div id="detailRedes" class="text-sm text-gray-800 break-words"></div></div>
                             <div><span class="block text-xs font-bold text-gray-500 uppercase">Biografía Breve</span><p id="detailBio" class="text-sm text-gray-800 mt-1"></p></div>
-                            <div class="md:col-span-2"><span class="block text-xs font-bold text-gray-500 uppercase">Observaciones Privadas</span><p id="detailObservaciones" class="text-sm text-gray-800 mt-1 bg-yellow-50 p-2 rounded border border-yellow-100"></p></div>
+                            <div><span class="block text-xs font-bold text-gray-500 uppercase">Observaciones Privadas</span><p id="detailObservaciones" class="text-sm text-gray-800 mt-1 bg-yellow-50 p-2 rounded border border-yellow-100"></p></div>
+                            <div class="md:col-span-2 text-right pt-2 border-t border-gray-200">
+                                <span class="text-xs text-gray-500 italic">Registrado / Modificado por: <b id="detailModificadoPor" class="text-purple-700 not-italic font-semibold">Sin registro</b></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -260,7 +264,7 @@
         </div>
     </div>
 
-    <!-- Actividad -->
+    <!-- Modal de Actividad -->
     <div id="activityModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200"><h3 class="text-lg font-semibold text-gray-800">Registrar Actividad</h3></div>
@@ -287,7 +291,7 @@
         </div>
     </div>
 
-    <!-- Publicación -->
+    <!-- Modal de Publicación -->
     <div id="publicationModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200"><h3 class="text-lg font-semibold text-gray-800">Agregar al Monitoreo</h3></div>
@@ -307,8 +311,18 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbziWi8t2n_Q1sqB1UPZJOB4F3HqMJGW7JdhoTrCFDuYSXMgkIu_aPhjDAIACaLkMYlBSQ/exec";
 
-        let appState = { aspirantes: [], currentView: 'dashboard', selectedAspiranteId: null, isReadOnly: true, role: 'guest', sessionPassword: null, mapInstance: null };
+        let appState = { 
+            aspirantes: [], 
+            currentView: 'dashboard', 
+            selectedAspiranteId: null, 
+            isReadOnly: true, 
+            role: 'guest', 
+            userName: '', 
+            sessionPassword: null, 
+            mapInstance: null 
+        };
         let currentBase64Image = null; 
+        let loginRoleTarget = 'admin';
 
         const MUNICIPIOS = ["Acuamanala de Miguel Hidalgo", "Amaxac de Guerrero", "Apetatitlán de Antonio Carvajal", "Apizaco", "Atlangatepec", "Atltzayanca", "Benito Juárez", "Calpulalpan", "Chiautempan", "Contla de Juan Cuamatzi", "Cuapiaxtla", "Cuaxomulco", "El Carmen Tequexquitla", "Emiliano Zapata", "Españita", "Huamantla", "Hueyotlipan", "Ixtacuixtla de Mariano Matamoros", "Ixtenco", "La Magdalena Tlaltelulco", "Lázaro Cárdenas", "Mazatecochco de José María Morelos", "Muñoz de Domingo Arenas", "Nanacamilpa de Mariano Arista", "Natívitas", "Panotla", "Papalotla de Xicohténcatl", "San Damián Texóloc", "San Francisco Tetlanohcan", "San Jerónimo Zacualpan", "San José Teacalco", "San Juan Huactzinco", "San Lorenzo Axocomanitla", "San Lucas Tecopilco", "San Pablo del Monte", "Sanctórum de Lázaro Cárdenas", "Santa Ana Nopalucan", "Santa Apolonia Teacalco", "Santa Catarina Ayometla", "Santa Cruz Quilehtla", "Santa Cruz Tlaxcala", "Santa Isabel Xiloxoxtla", "Tenancingo", "Teolocholco", "Tepetitla de Lardizábal", "Tepeyanco", "Terrenate", "Tetla de la Solidaridad", "Tetlatlahuca", "Tlaxcala", "Tlaxco", "Tocatlán", "Totolac", "Tzompantepec", "Xaloztoc", "Xaltocan", "Xicohtzinco", "Yauhquemehcan", "Zacatelco", "Ziltlaltépec de Trinidad Sánchez Santos"];
         const FED_DISTRITOS = ["I", "II", "III"];
@@ -383,17 +397,24 @@
             }
         }
 
-        let loginRoleTarget = 'admin'; 
-
         function enterAsGuest() { 
-            appState.isReadOnly = true; appState.role = 'guest'; 
+            appState.isReadOnly = true; 
+            appState.role = 'guest'; 
+            appState.userName = 'Invitado';
             document.getElementById('loginOverlay').classList.add('hidden'); 
-            applyPermissions(); fetchInitialData(); 
+            applyPermissions(); 
+            fetchInitialData(); 
         }
         
         function promptLogin(role) { 
             loginRoleTarget = role; 
             document.getElementById('adminPasswordInput').value = ""; 
+            
+            const titleEl = document.getElementById('passwordModalTitle');
+            if (titleEl) {
+                titleEl.innerHTML = `<i class="fas fa-lock mr-2 text-gray-500"></i> Acceso de ${role === 'admin' ? 'Administrador' : 'Capturista'}`;
+            }
+            
             openModal('passwordModal'); 
             setTimeout(() => document.getElementById('adminPasswordInput').focus(), 100); 
         }
@@ -402,7 +423,7 @@
             const passInput = document.getElementById('adminPasswordInput').value; 
             if (!passInput) return; 
             
-            showLoading('Verificando...');
+            showLoading('Verificando credenciales...');
             try {
                 const res = await postData({ 
                     accion: 'verificarContrasena', 
@@ -413,18 +434,26 @@
                 if (res && res.exito) { 
                     appState.isReadOnly = false; 
                     appState.role = res.rol; 
+                    appState.userName = res.nombre || 'Usuario';
                     appState.sessionPassword = passInput.trim(); 
+                    
                     closeModal('passwordModal'); 
                     document.getElementById('loginOverlay').classList.add('hidden'); 
                     applyPermissions(); 
                     fetchInitialData(); 
+
+                    // Bienvenida personalizada
+                    setTimeout(() => {
+                        alert(`¡Bienvenido(a), ${appState.userName}!`);
+                    }, 200);
+
                 } else { 
-                    alert("Contraseña incorrecta."); 
+                    alert(res && res.mensaje ? res.mensaje : "Contraseña incorrecta."); 
                     document.getElementById('adminPasswordInput').value = ""; 
                     document.getElementById('adminPasswordInput').focus(); 
                 }
             } catch (error) { 
-                alert("Error de conexión al verificar contraseña."); 
+                alert("Error de conexión al verificar contraseña. Por favor intenta de nuevo."); 
                 console.error(error);
             } finally { 
                 hideLoading(); 
@@ -434,30 +463,76 @@
         function applyPermissions() {
             const btns = ['btnNuevoRegistro', 'btnEditProfile', 'btnNewActivity', 'btnNewPublication'];
             const btnDelete = document.getElementById('btnDeleteProfile');
+            const badge = document.getElementById('userStatusBadge');
+
+            if (badge) {
+                if (appState.role !== 'guest' && appState.userName) {
+                    badge.innerText = `${appState.userName} (${appState.role === 'admin' ? 'Admin' : 'Editor'})`;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
 
             if (appState.role === 'guest') {
-                btns.forEach(id => document.getElementById(id).classList.add('hidden'));
-                if(btnDelete) btnDelete.classList.add('hidden');
+                btns.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('hidden'); });
+                if (btnDelete) btnDelete.classList.add('hidden');
             } else if (appState.role === 'editor') {
-                btns.forEach(id => document.getElementById(id).classList.remove('hidden'));
-                if(btnDelete) btnDelete.classList.add('hidden'); 
+                btns.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('hidden'); });
+                if (btnDelete) btnDelete.classList.add('hidden'); 
             } else if (appState.role === 'admin') {
-                btns.forEach(id => document.getElementById(id).classList.remove('hidden'));
-                if(btnDelete) btnDelete.classList.remove('hidden'); 
+                btns.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('hidden'); });
+                if (btnDelete) btnDelete.classList.remove('hidden'); 
             }
         }
 
-        function showLoading(text) { document.getElementById('loadingText').innerText = text; document.getElementById('loadingOverlay').classList.remove('hidden'); }
-        function hideLoading() { document.getElementById('loadingOverlay').classList.add('hidden'); }
+        function showLoading(text) { 
+            document.getElementById('loadingText').innerText = text; 
+            document.getElementById('loadingOverlay').classList.remove('hidden'); 
+        }
+        function hideLoading() { 
+            document.getElementById('loadingOverlay').classList.add('hidden'); 
+        }
 
         async function fetchInitialData() {
-            if(API_URL.includes("AQUI_PEGA")) { alert("ADVERTENCIA: Aún no pegas tu URL."); return; }
-            try { showLoading('Cargando base de datos...'); const response = await fetch(`${API_URL}?accion=obtenerDatos`); appState.aspirantes = await response.json() || []; render(); } catch (error) { console.error("Aviso de conexión en segundo plano:", error); } finally { hideLoading(); }
+            try { 
+                showLoading('Cargando base de datos...'); 
+                const response = await fetch(`${API_URL}?accion=obtenerDatos`); 
+                appState.aspirantes = await response.json() || []; 
+                render(); 
+            } catch (error) { 
+                console.error("Error al obtener datos:", error); 
+            } finally { 
+                hideLoading(); 
+            }
         }
-        async function postData(payload) { const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }); return await response.json(); }
 
-        function goHome() { appState.currentView = 'dashboard'; appState.selectedAspiranteId = null; document.getElementById('dashboardView').classList.remove('hidden'); document.getElementById('detailView').classList.add('hidden'); document.getElementById('homeBtnContainer').classList.remove('hidden'); applyPermissions(); render(); }
-        function viewProfile(id) { appState.currentView = 'detail'; appState.selectedAspiranteId = id; document.getElementById('dashboardView').classList.add('hidden'); document.getElementById('detailView').classList.remove('hidden'); document.getElementById('homeBtnContainer').classList.add('hidden'); applyPermissions(); renderDetail(); }
+        async function postData(payload) { 
+            const response = await fetch(API_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                body: JSON.stringify(payload) 
+            }); 
+            return await response.json(); 
+        }
+
+        function goHome() { 
+            appState.currentView = 'dashboard'; 
+            appState.selectedAspiranteId = null; 
+            document.getElementById('dashboardView').classList.remove('hidden'); 
+            document.getElementById('detailView').classList.add('hidden'); 
+            applyPermissions(); 
+            render(); 
+        }
+
+        function viewProfile(id) { 
+            appState.currentView = 'detail'; 
+            appState.selectedAspiranteId = id; 
+            document.getElementById('dashboardView').classList.add('hidden'); 
+            document.getElementById('detailView').classList.remove('hidden'); 
+            applyPermissions(); 
+            renderDetail(); 
+        }
 
         function render() {
             const grid = document.getElementById('profilesGrid'); 
@@ -539,8 +614,19 @@
             }
             document.getElementById('detailAvatarContainer').innerHTML = bigAvatarHtml;
 
-            document.getElementById('detailName').innerText = asp.nombre; document.getElementById('detailCargo').innerText = asp.cargo; document.getElementById('detailEtapa').innerText = asp.etapa; document.getElementById('detailPartido').innerText = asp.partido || 'Sin partido'; document.getElementById('detailBio').innerText = asp.bio || 'Sin biografía.'; document.getElementById('detailTelefono').innerHTML = `<i class="fas fa-phone mr-2 text-gray-400"></i> ${asp.telefono || 'No registrado'}`; document.getElementById('detailObservaciones').innerText = asp.observaciones || 'Ninguna.';
+            document.getElementById('detailName').innerText = asp.nombre; 
+            document.getElementById('detailCargo').innerText = asp.cargo; 
+            document.getElementById('detailEtapa').innerText = asp.etapa; 
+            document.getElementById('detailPartido').innerText = asp.partido || 'Sin partido'; 
+            document.getElementById('detailBio').innerText = asp.bio || 'Sin biografía.'; 
+            document.getElementById('detailTelefono').innerHTML = `<i class="fas fa-phone mr-2 text-gray-400"></i> ${asp.telefono || 'No registrado'}`; 
+            document.getElementById('detailObservaciones').innerText = asp.observaciones || 'Ninguna.';
             
+            const modificadoPorEl = document.getElementById('detailModificadoPor');
+            if (modificadoPorEl) {
+                modificadoPorEl.innerText = asp.modificadoPor || 'Sin registro';
+            }
+
             const divRedes = document.getElementById('detailRedes');
             if (asp.redesSociales && asp.redesSociales.trim() !== '') {
                 divRedes.innerHTML = `<a href="${asp.redesSociales.startsWith('http') ? asp.redesSociales : 'https://' + asp.redesSociales}" target="_blank" class="text-blue-600 hover:underline"><i class="fas fa-link mr-2 text-gray-400"></i> ${asp.redesSociales}</a>`;
@@ -554,12 +640,13 @@
                 appState.mapInstance = null;
             }
 
-            const tl = document.getElementById('timelineContainer'); tl.innerHTML = '';
+            const tl = document.getElementById('timelineContainer'); 
+            tl.innerHTML = '';
             
             let heatPoints = [];
             let markers = [];
 
-            if(!asp.actividades || asp.actividades.length === 0) {
+            if (!asp.actividades || asp.actividades.length === 0) {
                 tl.innerHTML = '<p class="text-sm text-gray-500 italic">No hay actividades registradas.</p>'; 
             } else {
                 asp.actividades.forEach(act => {
@@ -648,42 +735,84 @@
                     appState.mapInstance.fitBounds(bounds, { padding: [40, 40] });
                 }
                 
-                setTimeout(() => { appState.mapInstance.invalidateSize(); }, 200);
+                setTimeout(() => { 
+                    if (appState.mapInstance) appState.mapInstance.invalidateSize(); 
+                }, 200);
 
             } else {
                 mapDiv.className = "w-full h-32 bg-gray-50 rounded-md border border-gray-200 flex items-center justify-center";
                 mapDiv.innerHTML = `<span class="text-gray-400 italic"><i class="fas fa-map-marker-alt mr-2 text-gray-300"></i>Aún no hay coordenadas exactas registradas para mapear.</span>`;
             }
 
-            const media = document.getElementById('mediaContainer'); media.innerHTML = '';
-            if(!asp.publicaciones || asp.publicaciones.length === 0) media.innerHTML = '<p class="text-sm text-gray-500 italic">No hay publicaciones registradas.</p>'; else asp.publicaciones.forEach(pub => { let icon = 'fa-globe'; if(pub.plataforma.toLowerCase() === 'facebook') icon = 'fa-facebook text-blue-600'; if(pub.plataforma.toLowerCase() === 'x') icon = 'fa-x-twitter text-black'; if(pub.plataforma.toLowerCase() === 'instagram') icon = 'fa-instagram text-pink-600'; let urlHtml = pub.url ? `<a href="${pub.url}" target="_blank" class="text-xs text-blue-600 hover:underline mt-2 inline-block"><i class="fas fa-external-link-alt mr-1"></i>Ver</a>` : ''; media.innerHTML += `<div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm"><div class="flex justify-between items-start mb-2"><div class="flex items-center"><i class="fab ${icon} text-lg mr-2"></i><span class="font-bold text-sm">${pub.plataforma}</span></div><span class="text-xs text-gray-500">${pub.fecha}</span></div><p class="text-sm text-gray-700 italic">"${pub.contenido}"</p>${urlHtml}</div>`; });
+            const media = document.getElementById('mediaContainer'); 
+            media.innerHTML = '';
+            if (!asp.publicaciones || asp.publicaciones.length === 0) {
+                media.innerHTML = '<p class="text-sm text-gray-500 italic">No hay publicaciones registradas.</p>';
+            } else {
+                asp.publicaciones.forEach(pub => { 
+                    let icon = 'fa-globe'; 
+                    if (pub.plataforma.toLowerCase() === 'facebook') icon = 'fa-facebook text-blue-600'; 
+                    if (pub.plataforma.toLowerCase() === 'x') icon = 'fa-x-twitter text-black'; 
+                    if (pub.plataforma.toLowerCase() === 'instagram') icon = 'fa-instagram text-pink-600'; 
+                    let urlHtml = pub.url ? `<a href="${pub.url}" target="_blank" class="text-xs text-blue-600 hover:underline mt-2 inline-block"><i class="fas fa-external-link-alt mr-1"></i>Ver</a>` : ''; 
+                    media.innerHTML += `<div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm"><div class="flex justify-between items-start mb-2"><div class="flex items-center"><i class="fab ${icon} text-lg mr-2"></i><span class="font-bold text-sm">${pub.plataforma}</span></div><span class="text-xs text-gray-500">${pub.fecha}</span></div><p class="text-sm text-gray-700 italic">"${pub.contenido}"</p>${urlHtml}</div>`; 
+                });
+            }
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        
         function previewImage(event) {
             const file = event.target.files[0];
-            if (file) { if(file.size > 2 * 1024 * 1024) { alert("Máximo 2MB."); event.target.value = ""; return; }
-                const reader = new FileReader(); reader.onload = function(e) { currentBase64Image = e.target.result; document.getElementById('fotoPreview').src = currentBase64Image; document.getElementById('fotoPreview').classList.remove('hidden'); document.getElementById('fotoIcon').classList.add('hidden'); }
+            if (file) { 
+                if (file.size > 2 * 1024 * 1024) { 
+                    alert("Máximo 2MB por imagen."); 
+                    event.target.value = ""; 
+                    return; 
+                }
+                const reader = new FileReader(); 
+                reader.onload = function(e) { 
+                    currentBase64Image = e.target.result; 
+                    document.getElementById('fotoPreview').src = currentBase64Image; 
+                    document.getElementById('fotoPreview').classList.remove('hidden'); 
+                    document.getElementById('fotoIcon').classList.add('hidden'); 
+                }
                 reader.readAsDataURL(file);
             }
         }
 
         function prepareNewProfile() {
             document.getElementById('profileModalTitle').innerText = "Registrar Nuevo Aspirante";
-            document.getElementById('formProfileId').value = ""; document.getElementById('formNombre').value = ""; document.getElementById('formCargo').value = ""; document.getElementById('formEtapa').value = "Aspirante"; document.getElementById('formPartido').value = ""; document.getElementById('formTelefono').value = ""; document.getElementById('formBio').value = ""; document.getElementById('formObservaciones').value = "";
+            document.getElementById('formProfileId').value = ""; 
+            document.getElementById('formNombre').value = ""; 
+            document.getElementById('formCargo').value = ""; 
+            document.getElementById('formEtapa').value = "Aspirante"; 
+            document.getElementById('formPartido').value = ""; 
+            document.getElementById('formTelefono').value = ""; 
+            document.getElementById('formBio').value = ""; 
+            document.getElementById('formObservaciones').value = "";
             document.getElementById('formRedes').value = ""; 
-            document.getElementById('formFoto').value = ""; currentBase64Image = null; document.getElementById('fotoPreview').src = ""; document.getElementById('fotoPreview').classList.add('hidden'); document.getElementById('fotoIcon').classList.remove('hidden');
+            document.getElementById('formFoto').value = ""; 
+            currentBase64Image = null; 
+            document.getElementById('fotoPreview').src = ""; 
+            document.getElementById('fotoPreview').classList.add('hidden'); 
+            document.getElementById('fotoIcon').classList.remove('hidden');
             handleCargoChange(); 
             openModal('addModal');
         }
 
         function openEditModal() {
             const asp = appState.aspirantes.find(a => a.id === appState.selectedAspiranteId);
-            if(!asp) return;
+            if (!asp) return;
             document.getElementById('profileModalTitle').innerText = "Editar Perfil";
-            document.getElementById('formProfileId').value = asp.id; document.getElementById('formNombre').value = asp.nombre; 
-            document.getElementById('formEtapa').value = asp.etapa; document.getElementById('formPartido').value = asp.partido || ''; document.getElementById('formTelefono').value = asp.telefono || ''; document.getElementById('formBio').value = asp.bio; document.getElementById('formObservaciones').value = asp.observaciones || '';
+            document.getElementById('formProfileId').value = asp.id; 
+            document.getElementById('formNombre').value = asp.nombre; 
+            document.getElementById('formEtapa').value = asp.etapa; 
+            document.getElementById('formPartido').value = asp.partido || ''; 
+            document.getElementById('formTelefono').value = asp.telefono || ''; 
+            document.getElementById('formBio').value = asp.bio; 
+            document.getElementById('formObservaciones').value = asp.observaciones || '';
             document.getElementById('formRedes').value = asp.redesSociales || ''; 
             
             let baseCargo = asp.cargo || '';
@@ -709,27 +838,33 @@
                 document.getElementById('formDetalleCargo').value = detalle1;
             }
 
-            document.getElementById('formFoto').value = ""; currentBase64Image = null;
-            if (asp.foto && asp.foto.trim() !== '') { document.getElementById('fotoPreview').src = asp.foto; document.getElementById('fotoPreview').classList.remove('hidden'); document.getElementById('fotoIcon').classList.add('hidden'); } 
-            else { document.getElementById('fotoPreview').src = ""; document.getElementById('fotoPreview').classList.add('hidden'); document.getElementById('fotoIcon').classList.remove('hidden'); }
+            document.getElementById('formFoto').value = ""; 
+            currentBase64Image = null;
+            if (asp.foto && asp.foto.trim() !== '') { 
+                document.getElementById('fotoPreview').src = asp.foto; 
+                document.getElementById('fotoPreview').classList.remove('hidden'); 
+                document.getElementById('fotoIcon').classList.add('hidden'); 
+            } else { 
+                document.getElementById('fotoPreview').src = ""; 
+                document.getElementById('fotoPreview').classList.add('hidden'); 
+                document.getElementById('fotoIcon').classList.remove('hidden'); 
+            }
             openModal('addModal');
         }
 
         async function processProfileForm() {
             const id = document.getElementById('formProfileId').value;
-            
             let cargoFinal = document.getElementById('formCargo').value;
             const selectValue = document.getElementById('formDetalleCargo').value;
             const textValue = document.getElementById('formDetalleCargoText').value;
             const municipioComunidadValue = document.getElementById('formMunicipioComunidad').value;
 
             if (['Diputado Federal', 'Diputado Local', 'Presidente Municipal'].includes(cargoFinal)) {
-                if(!selectValue) { alert("Por favor selecciona el distrito o municipio en el detalle del cargo."); return; }
+                if (!selectValue) { alert("Por favor selecciona el distrito o municipio en el detalle del cargo."); return; }
                 cargoFinal += ' - ' + selectValue;
             } else if (cargoFinal === 'Presidente de Comunidad') {
-                if(!municipioComunidadValue) { alert("Por favor selecciona el municipio al que pertenece la comunidad."); return; }
-                if(!textValue) { alert("Por favor escribe el nombre de la comunidad."); return; }
-                
+                if (!municipioComunidadValue) { alert("Por favor selecciona el municipio al que pertenece la comunidad."); return; }
+                if (!textValue) { alert("Por favor escribe el nombre de la comunidad."); return; }
                 cargoFinal += ' - ' + municipioComunidadValue + ' - ' + textValue;
             }
 
@@ -746,29 +881,50 @@
                 fotoUrlActual: id ? appState.aspirantes.find(a => a.id === id).foto : null 
             };
             
-            if(!payload.nombre || !document.getElementById('formCargo').value) { alert("Nombre y Cargo son obligatorios."); return; }
+            if (!payload.nombre || !document.getElementById('formCargo').value) { 
+                alert("Nombre y Cargo son obligatorios."); 
+                return; 
+            }
             
             try { 
-                showLoading(id ? 'Actualizando...' : 'Guardando... Esto puede tardar si incluye foto.'); 
+                showLoading(id ? 'Actualizando...' : 'Guardando... Esto puede tardar unos segundos.'); 
                 const res = await postData({ 
                     accion: id ? 'actualizarAspirante' : 'guardarAspirante', 
                     password: appState.sessionPassword, 
                     aspirante: { id, ...payload } 
                 }); 
-                if(res.exito) { 
-                    if(id) { 
+                
+                if (res && res.exito) { 
+                    if (id) { 
                         const idx = appState.aspirantes.findIndex(a => a.id === id); 
-                        appState.aspirantes[idx] = { ...appState.aspirantes[idx], ...payload, foto: res.foto }; 
+                        appState.aspirantes[idx] = { 
+                            ...appState.aspirantes[idx], 
+                            ...payload, 
+                            foto: res.foto, 
+                            modificadoPor: res.modificadoPor || appState.userName 
+                        }; 
                     } else { 
-                        appState.aspirantes.push({ id: res.id, actividades: [], publicaciones: [], ...payload, foto: res.foto }); 
+                        appState.aspirantes.push({ 
+                            id: res.id, 
+                            actividades: [], 
+                            publicaciones: [], 
+                            ...payload, 
+                            foto: res.foto, 
+                            modificadoPor: res.modificadoPor || appState.userName 
+                        }); 
                     } 
-                } 
-                closeModal('addModal'); 
-                appState.currentView === 'detail' ? renderDetail() : render(); 
-            } catch(e) { alert("Error al guardar."); } finally { hideLoading(); }
+                    closeModal('addModal'); 
+                    appState.currentView === 'detail' ? renderDetail() : render(); 
+                } else {
+                    alert("Error al guardar: " + (res ? res.mensaje : "Error desconocido"));
+                }
+            } catch(e) { 
+                alert("Error de conexión al guardar los datos."); 
+            } finally { 
+                hideLoading(); 
+            }
         }
 
-        // --- FUNCIONES PARA INYECTAR LA FECHA DE HOY ---
         function getTodayDateString() {
             const tzOffset = (new Date()).getTimezoneOffset() * 60000; 
             return new Date(Date.now() - tzOffset).toISOString().split('T')[0];
@@ -803,7 +959,7 @@
                 anfitriones: document.getElementById('formActAnfitriones').value  
             };
             
-            if(!payload.fecha || !payload.titulo) { alert("La fecha y el título son obligatorios."); return; }
+            if (!payload.fecha || !payload.titulo) { alert("La fecha y el título son obligatorios."); return; }
 
             try {
                 showLoading('Guardando actividad...');
@@ -820,13 +976,18 @@
                     
                     closeModal('activityModal');
                     renderDetail();
-                } else { alert("Error del servidor: " + (res ? res.mensaje : "Error desconocido al guardar.")); }
-            } catch(e) { alert("Error de conexión. Revisa que tu Apps Script tenga la función 'guardarActividad'."); } finally { hideLoading(); }
+                } else { 
+                    alert("Error: " + (res ? res.mensaje : "Error desconocido")); 
+                }
+            } catch(e) { 
+                alert("Error de conexión al registrar actividad."); 
+            } finally { 
+                hideLoading(); 
+            }
         }
 
         function obtenerUbicacion() {
             const inputUbicacion = document.getElementById('formActUbicacion');
-            
             if (!navigator.geolocation) {
                 alert("La geolocalización no es compatible con tu navegador.");
                 return;
@@ -845,26 +1006,9 @@
                 },
                 (error) => {
                     inputUbicacion.placeholder = placeholderOriginal;
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            alert("Permiso denegado. Activa el GPS de tu celular y permite que el navegador acceda a tu ubicación.");
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            alert("La información de ubicación no está disponible en este momento.");
-                            break;
-                        case error.TIMEOUT:
-                            alert("Se agotó el tiempo para obtener la ubicación. Intenta en un lugar más abierto.");
-                            break;
-                        default:
-                            alert("Ocurrió un error desconocido al obtener la ubicación.");
-                            break;
-                    }
+                    alert("No se pudo obtener la ubicación actual. Revisa que el GPS esté activo y que des permisos al navegador.");
                 },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
-                }
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
         }
 
@@ -877,7 +1021,7 @@
                 url: document.getElementById('formPubUrl').value
             };
 
-            if(!payload.fecha || !payload.contenido) {
+            if (!payload.fecha || !payload.contenido) {
                 alert("La fecha y el resumen son obligatorios.");
                 return;
             }
@@ -898,17 +1042,16 @@
                     closeModal('publicationModal');
                     renderDetail();
                 } else {
-                    alert("Error del servidor: " + (res ? res.mensaje : "Error desconocido al guardar."));
+                    alert("Error: " + (res ? res.mensaje : "Error desconocido"));
                 }
             } catch(e) {
-                alert("Error de conexión. Revisa que tu Apps Script tenga la función 'guardarPublicacion'.");
-                console.error(e);
+                alert("Error de conexión al registrar publicación.");
             } finally {
                 hideLoading();
             }
         }
 
-    function exportarFichaPDF() {
+        function exportarFichaPDF() {
             showLoading('Generando archivo PDF...');
             const elemento = document.getElementById('detailView');
             const botones = elemento.querySelectorAll('button');
@@ -1002,7 +1145,7 @@
                         password: appState.sessionPassword, 
                         id: appState.selectedAspiranteId 
                     });
-                    if(res.exito) {
+                    if(res && res.exito) {
                         appState.aspirantes = appState.aspirantes.filter(a => a.id !== appState.selectedAspiranteId);
                         goHome();
                     } else {
