@@ -61,20 +61,25 @@
 
     <!-- NAVEGACIÓN -->
     <nav class="bg-purple-800 text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center cursor-pointer" onclick="goHome()">
-                    <i class="fas fa-users text-2xl mr-3"></i>
-                    <span class="font-bold text-xl tracking-tight">Directorio Electoral</span>
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between min-h-[64px] py-2">
+                <div class="flex items-center cursor-pointer select-none mr-2 shrink-0" onclick="goHome()">
+                    <i class="fas fa-users text-xl sm:text-2xl mr-2"></i>
+                    <span class="font-bold text-sm sm:text-xl tracking-tight leading-tight">Directorio<br class="sm:hidden"> Electoral</span>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <span id="userStatusBadge" class="hidden text-xs bg-purple-900 text-purple-200 border border-purple-700 px-3 py-1 rounded-full"></span>
-                    <button id="btnNuevoRegistro" onclick="prepareNewProfile()" class="bg-purple-600 hover:bg-pink-500 px-4 py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-sm hidden">
-                        <i class="fas fa-plus mr-2"></i>Nuevo Registro
-                    </button>
-                    <!-- BOTÓN CERRAR SESIÓN -->
-                    <button id="btnLogout" onclick="logout()" class="bg-purple-950 hover:bg-red-700 text-white px-3 py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-xs hidden flex items-center" title="Cerrar sesión actual">
-                        <i class="fas fa-sign-out-alt mr-1"></i> Salir
+                
+                <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
+                    <!-- CONTENEDOR VERTICAL: NOMBRE ARRIBA, SALIR ABAJO -->
+                    <div class="flex flex-col items-end justify-center">
+                        <span id="userStatusBadge" class="hidden text-[10px] sm:text-xs bg-purple-900 text-purple-200 border border-purple-700 px-2 py-0.5 rounded-full max-w-[130px] sm:max-w-xs truncate text-center"></span>
+                        <button id="btnLogout" onclick="logout()" class="mt-1 bg-purple-950 hover:bg-red-700 text-white px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium transition duration-150 shadow-sm hidden flex items-center" title="Cerrar sesión actual">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Salir
+                        </button>
+                    </div>
+
+                    <!-- BOTÓN NUEVO REGISTRO -->
+                    <button id="btnNuevoRegistro" onclick="prepareNewProfile()" class="bg-purple-600 hover:bg-pink-500 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-xs sm:text-sm hidden whitespace-nowrap flex items-center">
+                        <i class="fas fa-plus mr-1 sm:mr-2"></i>Nuevo Registro
                     </button>
                 </div>
             </div>
@@ -333,7 +338,6 @@
         const FED_DISTRITOS = ["I", "II", "III"];
         const LOC_DISTRITOS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV"];
 
-        // Comprueba si ya existe una sesión guardada en el navegador
         function checkSavedSession() {
             try {
                 const sessionRaw = localStorage.getItem(SESSION_STORAGE_KEY);
@@ -503,7 +507,6 @@
                     appState.userName = res.nombre || 'Usuario';
                     appState.sessionPassword = passInput.trim(); 
                     
-                    // Guardar sesión persistente
                     saveActiveSession(res.rol, appState.userName, appState.sessionPassword);
 
                     closeModal('passwordModal'); 
@@ -1238,7 +1241,6 @@
             }
         }
 
-        // Inicializar comprobación de sesión al arrancar la app
         window.addEventListener('DOMContentLoaded', () => {
             checkSavedSession();
         });
