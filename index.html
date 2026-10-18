@@ -72,6 +72,10 @@
                     <button id="btnNuevoRegistro" onclick="prepareNewProfile()" class="bg-purple-600 hover:bg-pink-500 px-4 py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-sm hidden">
                         <i class="fas fa-plus mr-2"></i>Nuevo Registro
                     </button>
+                    <!-- BOTÓN CERRAR SESIÓN -->
+                    <button id="btnLogout" onclick="logout()" class="bg-purple-950 hover:bg-red-700 text-white px-3 py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-xs hidden flex items-center" title="Cerrar sesión actual">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Salir
+                    </button>
                 </div>
             </div>
         </div>
@@ -310,6 +314,7 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbziWi8t2n_Q1sqB1UPZJOB4F3HqMJGW7JdhoTrCFDuYSXMgkIu_aPhjDAIACaLkMYlBSQ/exec";
+        const SESSION_STORAGE_KEY = 'directorio_electoral_sesion_activa';
 
         let appState = { 
             aspirantes: [], 
@@ -327,6 +332,63 @@
         const MUNICIPIOS = ["Acuamanala de Miguel Hidalgo", "Amaxac de Guerrero", "Apetatitlán de Antonio Carvajal", "Apizaco", "Atlangatepec", "Atltzayanca", "Benito Juárez", "Calpulalpan", "Chiautempan", "Contla de Juan Cuamatzi", "Cuapiaxtla", "Cuaxomulco", "El Carmen Tequexquitla", "Emiliano Zapata", "Españita", "Huamantla", "Hueyotlipan", "Ixtacuixtla de Mariano Matamoros", "Ixtenco", "La Magdalena Tlaltelulco", "Lázaro Cárdenas", "Mazatecochco de José María Morelos", "Muñoz de Domingo Arenas", "Nanacamilpa de Mariano Arista", "Natívitas", "Panotla", "Papalotla de Xicohténcatl", "San Damián Texóloc", "San Francisco Tetlanohcan", "San Jerónimo Zacualpan", "San José Teacalco", "San Juan Huactzinco", "San Lorenzo Axocomanitla", "San Lucas Tecopilco", "San Pablo del Monte", "Sanctórum de Lázaro Cárdenas", "Santa Ana Nopalucan", "Santa Apolonia Teacalco", "Santa Catarina Ayometla", "Santa Cruz Quilehtla", "Santa Cruz Tlaxcala", "Santa Isabel Xiloxoxtla", "Tenancingo", "Teolocholco", "Tepetitla de Lardizábal", "Tepeyanco", "Terrenate", "Tetla de la Solidaridad", "Tetlatlahuca", "Tlaxcala", "Tlaxco", "Tocatlán", "Totolac", "Tzompantepec", "Xaloztoc", "Xaltocan", "Xicohtzinco", "Yauhquemehcan", "Zacatelco", "Ziltlaltépec de Trinidad Sánchez Santos"];
         const FED_DISTRITOS = ["I", "II", "III"];
         const LOC_DISTRITOS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV"];
+
+        // Comprueba si ya existe una sesión guardada en el navegador
+        function checkSavedSession() {
+            try {
+                const sessionRaw = localStorage.getItem(SESSION_STORAGE_KEY);
+                if (sessionRaw) {
+                    const sessionData = JSON.parse(sessionRaw);
+                    if (sessionData && sessionData.role) {
+                        appState.role = sessionData.role;
+                        appState.userName = sessionData.userName || '';
+                        appState.sessionPassword = sessionData.sessionPassword || null;
+                        appState.isReadOnly = (sessionData.role === 'guest');
+
+                        document.getElementById('loginOverlay').classList.add('hidden');
+                        applyPermissions();
+                        fetchInitialData();
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.error("Error al recuperar sesión previa:", e);
+            }
+            return false;
+        }
+
+        function saveActiveSession(role, userName, password) {
+            try {
+                localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
+                    role: role,
+                    userName: userName,
+                    sessionPassword: password
+                }));
+            } catch (e) {
+                console.error("Error al guardar la sesión:", e);
+            }
+        }
+
+        function logout() {
+            if (confirm("¿Deseas cerrar tu sesión? Tendrás que ingresar tu contraseña nuevamente.")) {
+                try {
+                    localStorage.removeItem(SESSION_STORAGE_KEY);
+                } catch (e) {
+                    console.error("Error al limpiar la sesión:", e);
+                }
+
+                appState.role = 'guest';
+                appState.userName = '';
+                appState.sessionPassword = null;
+                appState.isReadOnly = true;
+                appState.selectedAspiranteId = null;
+
+                document.getElementById('adminPasswordInput').value = "";
+                document.getElementById('loginOverlay').classList.remove('hidden');
+                applyPermissions();
+                goHome();
+            }
+        }
 
         function limpiarFiltros() {
             document.getElementById('filterText').value = '';
@@ -401,6 +463,10 @@
             appState.isReadOnly = true; 
             appState.role = 'guest'; 
             appState.userName = 'Invitado';
+            appState.sessionPassword = null;
+
+            saveActiveSession('guest', 'Invitado', null);
+
             document.getElementById('loginOverlay').classList.add('hidden'); 
             applyPermissions(); 
             fetchInitialData(); 
@@ -437,12 +503,14 @@
                     appState.userName = res.nombre || 'Usuario';
                     appState.sessionPassword = passInput.trim(); 
                     
+                    // Guardar sesión persistente
+                    saveActiveSession(res.rol, appState.userName, appState.sessionPassword);
+
                     closeModal('passwordModal'); 
                     document.getElementById('loginOverlay').classList.add('hidden'); 
                     applyPermissions(); 
                     fetchInitialData(); 
 
-                    // Bienvenida personalizada
                     setTimeout(() => {
                         alert(`¡Bienvenido(a), ${appState.userName}!`);
                     }, 200);
@@ -464,10 +532,21 @@
             const btns = ['btnNuevoRegistro', 'btnEditProfile', 'btnNewActivity', 'btnNewPublication'];
             const btnDelete = document.getElementById('btnDeleteProfile');
             const badge = document.getElementById('userStatusBadge');
+            const btnLogout = document.getElementById('btnLogout');
+
+            const isOverlayVisible = !document.getElementById('loginOverlay').classList.contains('hidden');
+
+            if (btnLogout) {
+                if (!isOverlayVisible) {
+                    btnLogout.classList.remove('hidden');
+                } else {
+                    btnLogout.classList.add('hidden');
+                }
+            }
 
             if (badge) {
-                if (appState.role !== 'guest' && appState.userName) {
-                    badge.innerText = `${appState.userName} (${appState.role === 'admin' ? 'Admin' : 'Editor'})`;
+                if (!isOverlayVisible && appState.userName) {
+                    badge.innerText = `${appState.userName} (${appState.role === 'admin' ? 'Admin' : (appState.role === 'editor' ? 'Editor' : 'Lectura')})`;
                     badge.classList.remove('hidden');
                 } else {
                     badge.classList.add('hidden');
@@ -1158,6 +1237,11 @@
                 }
             }
         }
+
+        // Inicializar comprobación de sesión al arrancar la app
+        window.addEventListener('DOMContentLoaded', () => {
+            checkSavedSession();
+        });
     </script>
 </body>
 </html>
