@@ -69,7 +69,6 @@
                 </div>
                 
                 <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
-                    <!-- CONTENEDOR VERTICAL: NOMBRE ARRIBA, SALIR ABAJO -->
                     <div class="flex flex-col items-end justify-center">
                         <span id="userStatusBadge" class="hidden text-[10px] sm:text-xs bg-purple-900 text-purple-200 border border-purple-700 px-2 py-0.5 rounded-full max-w-[130px] sm:max-w-xs truncate text-center"></span>
                         <button id="btnLogout" onclick="logout()" class="mt-1 bg-purple-950 hover:bg-red-700 text-white px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium transition duration-150 shadow-sm hidden flex items-center" title="Cerrar sesión actual">
@@ -77,7 +76,6 @@
                         </button>
                     </div>
 
-                    <!-- BOTÓN NUEVO REGISTRO -->
                     <button id="btnNuevoRegistro" onclick="prepareNewProfile()" class="bg-purple-600 hover:bg-pink-500 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-xs sm:text-sm hidden whitespace-nowrap flex items-center">
                         <i class="fas fa-plus mr-1 sm:mr-2"></i>Nuevo Registro
                     </button>
@@ -273,11 +271,12 @@
         </div>
     </div>
 
-    <!-- Modal de Actividad -->
+    <!-- Modal de Actividad (Crear / Editar) -->
     <div id="activityModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200"><h3 class="text-lg font-semibold text-gray-800">Registrar Actividad</h3></div>
+            <div class="px-6 py-4 border-b border-gray-200"><h3 id="activityModalTitle" class="text-lg font-semibold text-gray-800">Registrar Actividad</h3></div>
             <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                <input type="hidden" id="formActId">
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label><input type="date" id="formActFecha" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Asistentes (Aprox.)</label><input type="number" id="formActAsistentes" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Ej. 150"></div>
@@ -300,11 +299,12 @@
         </div>
     </div>
 
-    <!-- Modal de Publicación -->
+    <!-- Modal de Publicación (Crear / Editar) -->
     <div id="publicationModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200"><h3 class="text-lg font-semibold text-gray-800">Agregar al Monitoreo</h3></div>
+            <div class="px-6 py-4 border-b border-gray-200"><h3 id="publicationModalTitle" class="text-lg font-semibold text-gray-800">Agregar al Monitoreo</h3></div>
             <div class="p-6 space-y-4">
+                <input type="hidden" id="formPubId">
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Plataforma</label><select id="formPubPlataforma" class="w-full border border-gray-300 rounded-md px-3 py-2"><option value="Facebook">Facebook</option><option value="X">X (Twitter)</option><option value="Instagram">Instagram</option><option value="TikTok">TikTok</option><option value="Noticia">Noticia</option><option value="Otro">Otro</option></select></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label><input type="date" id="formPubFecha" class="w-full border border-gray-300 rounded-md px-3 py-2"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Resumen</label><textarea id="formPubContenido" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea></div>
@@ -338,9 +338,17 @@
         const FED_DISTRITOS = ["I", "II", "III"];
         const LOC_DISTRITOS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV"];
 
-        // Función auxiliar para ordenar aspirantes alfabéticamente por nombre
         function ordenarAspirantes(lista) {
             return lista.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }));
+        }
+
+        // Limpia cadenas con formato ISO (e.g., 2026-10-15T06:00:00.000Z -> 2026-10-15)
+        function formatearFecha(f) {
+            if (!f) return '';
+            if (typeof f === 'string' && f.includes('T')) {
+                return f.split('T')[0];
+            }
+            return f;
         }
 
         function checkSavedSession() {
@@ -650,7 +658,6 @@
                 return matchName && matchCargo && matchDetalle && matchPartido && matchEtapa;
             });
 
-            // Garantizar orden alfabético A-Z en cualquier búsqueda o filtro
             filteredAspirantes = ordenarAspirantes(filteredAspirantes);
 
             document.getElementById('totalCount').innerText = filteredAspirantes.length === appState.aspirantes.length ? `${appState.aspirantes.length} registrados` : `Mostrando ${filteredAspirantes.length} de ${appState.aspirantes.length}`;
@@ -741,6 +748,13 @@
                 tl.innerHTML = '<p class="text-sm text-gray-500 italic">No hay actividades registradas.</p>'; 
             } else {
                 asp.actividades.forEach(act => {
+                    const fechaLimpia = formatearFecha(act.fecha);
+                    
+                    let editBtn = '';
+                    if (!appState.isReadOnly) {
+                        editBtn = `<button onclick="openEditActivityModal('${act.id}')" class="text-gray-400 hover:text-blue-600 p-1 transition" title="Editar actividad"><i class="fas fa-edit text-sm"></i></button>`;
+                    }
+
                     let extrasHtml = '';
                     if (act.asistentes || act.anfitriones || act.ubicacion) {
                         extrasHtml = `<div class="mt-3 flex flex-wrap gap-2 text-xs font-medium text-gray-600">`;
@@ -759,7 +773,7 @@
                                         cantidadAsistentes = parseInt(act.asistentes); 
                                     }
                                     heatPoints.push([lat, lng]); 
-                                    markers.push({lat: lat, lng: lng, title: act.titulo, date: act.fecha, asistentes: cantidadAsistentes});
+                                    markers.push({lat: lat, lng: lng, title: act.titulo, date: fechaLimpia, asistentes: cantidadAsistentes});
                                 }
                             }
                             
@@ -769,7 +783,19 @@
                         extrasHtml += `</div>`;
                     }
 
-                    tl.innerHTML += `<div class="relative pl-6"><span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-blue-500 ring-4 ring-white"></span><div><span class="text-xs font-semibold text-blue-600 uppercase">${act.fecha}</span><h4 class="text-md font-bold text-gray-900 mt-1">${act.titulo}</h4><p class="text-sm text-gray-600 mt-1">${act.descripcion}</p>${extrasHtml}</div></div>`;
+                    tl.innerHTML += `
+                    <div class="relative pl-6">
+                        <span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-blue-500 ring-4 ring-white"></span>
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">${fechaLimpia}</span>
+                                ${editBtn}
+                            </div>
+                            <h4 class="text-md font-bold text-gray-900 mt-0.5">${act.titulo}</h4>
+                            <p class="text-sm text-gray-600 mt-1">${act.descripcion}</p>
+                            ${extrasHtml}
+                        </div>
+                    </div>`;
                 });
             }
 
@@ -841,12 +867,34 @@
                 media.innerHTML = '<p class="text-sm text-gray-500 italic">No hay publicaciones registradas.</p>';
             } else {
                 asp.publicaciones.forEach(pub => { 
+                    const fechaLimpia = formatearFecha(pub.fecha);
                     let icon = 'fa-globe'; 
                     if (pub.plataforma.toLowerCase() === 'facebook') icon = 'fa-facebook text-blue-600'; 
                     if (pub.plataforma.toLowerCase() === 'x') icon = 'fa-x-twitter text-black'; 
                     if (pub.plataforma.toLowerCase() === 'instagram') icon = 'fa-instagram text-pink-600'; 
+                    
+                    let editBtn = '';
+                    if (!appState.isReadOnly) {
+                        editBtn = `<button onclick="openEditPublicationModal('${pub.id}')" class="text-gray-400 hover:text-indigo-600 p-1 transition ml-2" title="Editar publicación"><i class="fas fa-edit text-sm"></i></button>`;
+                    }
+
                     let urlHtml = pub.url ? `<a href="${pub.url}" target="_blank" class="text-xs text-blue-600 hover:underline mt-2 inline-block"><i class="fas fa-external-link-alt mr-1"></i>Ver</a>` : ''; 
-                    media.innerHTML += `<div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm"><div class="flex justify-between items-start mb-2"><div class="flex items-center"><i class="fab ${icon} text-lg mr-2"></i><span class="font-bold text-sm">${pub.plataforma}</span></div><span class="text-xs text-gray-500">${pub.fecha}</span></div><p class="text-sm text-gray-700 italic">"${pub.contenido}"</p>${urlHtml}</div>`; 
+                    
+                    media.innerHTML += `
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center">
+                                <i class="fab ${icon} text-lg mr-2"></i>
+                                <span class="font-bold text-sm">${pub.plataforma}</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <span class="text-xs text-gray-500">${fechaLimpia}</span>
+                                ${editBtn}
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-700 italic">"${pub.contenido}"</p>
+                        ${urlHtml}
+                    </div>`; 
                 });
             }
         }
@@ -1005,7 +1053,6 @@
                         }); 
                     } 
                     
-                    // Reordenar tras registrar o modificar
                     appState.aspirantes = ordenarAspirantes(appState.aspirantes);
 
                     closeModal('addModal'); 
@@ -1026,6 +1073,8 @@
         }
 
         function prepareNewActivity() {
+            document.getElementById('activityModalTitle').innerText = "Registrar Actividad";
+            document.getElementById('formActId').value = "";
             document.getElementById('formActFecha').value = getTodayDateString();
             document.getElementById('formActAsistentes').value = "";
             document.getElementById('formActTitulo').value = "";
@@ -1035,16 +1084,27 @@
             openModal('activityModal');
         }
 
-        function prepareNewPublication() {
-            document.getElementById('formPubPlataforma').value = "Facebook";
-            document.getElementById('formPubFecha').value = getTodayDateString();
-            document.getElementById('formPubContenido').value = "";
-            document.getElementById('formPubUrl').value = "";
-            openModal('publicationModal');
+        function openEditActivityModal(actId) {
+            const asp = appState.aspirantes.find(a => a.id === appState.selectedAspiranteId);
+            if (!asp || !asp.actividades) return;
+            const act = asp.actividades.find(item => item.id === actId);
+            if (!act) return;
+
+            document.getElementById('activityModalTitle').innerText = "Editar Actividad";
+            document.getElementById('formActId').value = act.id;
+            document.getElementById('formActFecha').value = formatearFecha(act.fecha);
+            document.getElementById('formActAsistentes').value = act.asistentes || "";
+            document.getElementById('formActTitulo').value = act.titulo || "";
+            document.getElementById('formActUbicacion').value = act.ubicacion || "";
+            document.getElementById('formActAnfitriones').value = act.anfitriones || "";
+            document.getElementById('formActDesc').value = act.descripcion || "";
+            openModal('activityModal');
         }
 
         async function processActivityForm() {
+            const actId = document.getElementById('formActId').value;
             const payload = {
+                id: actId || null,
                 idAspirante: appState.selectedAspiranteId,
                 fecha: document.getElementById('formActFecha').value,
                 titulo: document.getElementById('formActTitulo').value,
@@ -1057,9 +1117,10 @@
             if (!payload.fecha || !payload.titulo) { alert("La fecha y el título son obligatorios."); return; }
 
             try {
-                showLoading('Guardando actividad...');
+                showLoading(actId ? 'Actualizando actividad...' : 'Guardando actividad...');
+                const accion = actId ? 'actualizarActividad' : 'guardarActividad';
                 const res = await postData({ 
-                    accion: 'guardarActividad', 
+                    accion: accion, 
                     password: appState.sessionPassword, 
                     actividad: payload 
                 });
@@ -1067,7 +1128,13 @@
                 if (res && res.exito) {
                     const asp = appState.aspirantes.find(a => a.id === payload.idAspirante);
                     if (!asp.actividades) asp.actividades = [];
-                    asp.actividades.push({ id: res.id, ...payload });
+                    
+                    if (actId) {
+                        const idx = asp.actividades.findIndex(item => item.id === actId);
+                        if (idx !== -1) asp.actividades[idx] = { ...payload, id: actId };
+                    } else {
+                        asp.actividades.push({ id: res.id, ...payload });
+                    }
                     
                     closeModal('activityModal');
                     renderDetail();
@@ -1075,9 +1142,82 @@
                     alert("Error: " + (res ? res.mensaje : "Error desconocido")); 
                 }
             } catch(e) { 
-                alert("Error de conexión al registrar actividad."); 
+                alert("Error de conexión al procesar actividad."); 
             } finally { 
                 hideLoading(); 
+            }
+        }
+
+        function prepareNewPublication() {
+            document.getElementById('publicationModalTitle').innerText = "Agregar al Monitoreo";
+            document.getElementById('formPubId').value = "";
+            document.getElementById('formPubPlataforma').value = "Facebook";
+            document.getElementById('formPubFecha').value = getTodayDateString();
+            document.getElementById('formPubContenido').value = "";
+            document.getElementById('formPubUrl').value = "";
+            openModal('publicationModal');
+        }
+
+        function openEditPublicationModal(pubId) {
+            const asp = appState.aspirantes.find(a => a.id === appState.selectedAspiranteId);
+            if (!asp || !asp.publicaciones) return;
+            const pub = asp.publicaciones.find(item => item.id === pubId);
+            if (!pub) return;
+
+            document.getElementById('publicationModalTitle').innerText = "Editar Publicación";
+            document.getElementById('formPubId').value = pub.id;
+            document.getElementById('formPubPlataforma').value = pub.plataforma || "Facebook";
+            document.getElementById('formPubFecha').value = formatearFecha(pub.fecha);
+            document.getElementById('formPubContenido').value = pub.contenido || "";
+            document.getElementById('formPubUrl').value = pub.url || "";
+            openModal('publicationModal');
+        }
+
+        async function processPublicationForm() {
+            const pubId = document.getElementById('formPubId').value;
+            const payload = {
+                id: pubId || null,
+                idAspirante: appState.selectedAspiranteId,
+                plataforma: document.getElementById('formPubPlataforma').value,
+                fecha: document.getElementById('formPubFecha').value,
+                contenido: document.getElementById('formPubContenido').value,
+                url: document.getElementById('formPubUrl').value
+            };
+
+            if (!payload.fecha || !payload.contenido) {
+                alert("La fecha y el resumen son obligatorios.");
+                return;
+            }
+
+            try {
+                showLoading(pubId ? 'Actualizando publicación...' : 'Guardando publicación...');
+                const accion = pubId ? 'actualizarPublicacion' : 'guardarPublicacion';
+                const res = await postData({ 
+                    accion: accion, 
+                    password: appState.sessionPassword, 
+                    publicacion: payload 
+                });
+                
+                if (res && res.exito) {
+                    const asp = appState.aspirantes.find(a => a.id === payload.idAspirante);
+                    if (!asp.publicaciones) asp.publicaciones = [];
+                    
+                    if (pubId) {
+                        const idx = asp.publicaciones.findIndex(item => item.id === pubId);
+                        if (idx !== -1) asp.publicaciones[idx] = { ...payload, id: pubId };
+                    } else {
+                        asp.publicaciones.push({ id: res.id, ...payload });
+                    }
+                    
+                    closeModal('publicationModal');
+                    renderDetail();
+                } else {
+                    alert("Error: " + (res ? res.mensaje : "Error desconocido"));
+                }
+            } catch(e) {
+                alert("Error de conexión al procesar publicación.");
+            } finally {
+                hideLoading();
             }
         }
 
@@ -1105,45 +1245,6 @@
                 },
                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
-        }
-
-        async function processPublicationForm() {
-            const payload = {
-                idAspirante: appState.selectedAspiranteId,
-                plataforma: document.getElementById('formPubPlataforma').value,
-                fecha: document.getElementById('formPubFecha').value,
-                contenido: document.getElementById('formPubContenido').value,
-                url: document.getElementById('formPubUrl').value
-            };
-
-            if (!payload.fecha || !payload.contenido) {
-                alert("La fecha y el resumen son obligatorios.");
-                return;
-            }
-
-            try {
-                showLoading('Guardando publicación...');
-                const res = await postData({ 
-                    accion: 'guardarPublicacion', 
-                    password: appState.sessionPassword, 
-                    publicacion: payload 
-                });
-                
-                if (res && res.exito) {
-                    const asp = appState.aspirantes.find(a => a.id === payload.idAspirante);
-                    if (!asp.publicaciones) asp.publicaciones = [];
-                    asp.publicaciones.push({ id: res.id, ...payload });
-                    
-                    closeModal('publicationModal');
-                    renderDetail();
-                } else {
-                    alert("Error: " + (res ? res.mensaje : "Error desconocido"));
-                }
-            } catch(e) {
-                alert("Error de conexión al registrar publicación.");
-            } finally {
-                hideLoading();
-            }
         }
 
         function exportarFichaPDF() {
