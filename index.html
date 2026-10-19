@@ -338,6 +338,11 @@
         const FED_DISTRITOS = ["I", "II", "III"];
         const LOC_DISTRITOS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV"];
 
+        // Función auxiliar para ordenar aspirantes alfabéticamente por nombre
+        function ordenarAspirantes(lista) {
+            return lista.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }));
+        }
+
         function checkSavedSession() {
             try {
                 const sessionRaw = localStorage.getItem(SESSION_STORAGE_KEY);
@@ -580,7 +585,8 @@
             try { 
                 showLoading('Cargando base de datos...'); 
                 const response = await fetch(`${API_URL}?accion=obtenerDatos`); 
-                appState.aspirantes = await response.json() || []; 
+                const data = await response.json() || []; 
+                appState.aspirantes = ordenarAspirantes(data); 
                 render(); 
             } catch (error) { 
                 console.error("Error al obtener datos:", error); 
@@ -624,7 +630,7 @@
             const filterEtapa = document.getElementById('filterEtapa') ? document.getElementById('filterEtapa').value : 'Todos';
             const filterDetalleCargo = document.getElementById('filterDetalleCargo') ? document.getElementById('filterDetalleCargo').value : 'Todos';
 
-            const filteredAspirantes = appState.aspirantes.filter(asp => {
+            let filteredAspirantes = appState.aspirantes.filter(asp => {
                 const textTarget = (asp.nombre || '') + ' ' + (asp.cargo || '');
                 const matchName = textTarget.toLowerCase().includes(filterText);
                 const matchCargo = filterCargo === 'Todos' || (asp.cargo && asp.cargo.startsWith(filterCargo)); 
@@ -643,6 +649,9 @@
                 
                 return matchName && matchCargo && matchDetalle && matchPartido && matchEtapa;
             });
+
+            // Garantizar orden alfabético A-Z en cualquier búsqueda o filtro
+            filteredAspirantes = ordenarAspirantes(filteredAspirantes);
 
             document.getElementById('totalCount').innerText = filteredAspirantes.length === appState.aspirantes.length ? `${appState.aspirantes.length} registrados` : `Mostrando ${filteredAspirantes.length} de ${appState.aspirantes.length}`;
             
@@ -995,6 +1004,10 @@
                             modificadoPor: res.modificadoPor || appState.userName 
                         }); 
                     } 
+                    
+                    // Reordenar tras registrar o modificar
+                    appState.aspirantes = ordenarAspirantes(appState.aspirantes);
+
                     closeModal('addModal'); 
                     appState.currentView === 'detail' ? renderDetail() : render(); 
                 } else {
