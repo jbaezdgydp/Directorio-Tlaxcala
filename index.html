@@ -59,8 +59,8 @@
         </div>
     </div>
 
-    <!-- NAVEGACIÓN -->
-    <nav class="bg-purple-800 text-white shadow-md">
+    <!-- NAVEGACIÓN FIJA AL SCROLL -->
+    <nav class="bg-purple-800 text-white shadow-md sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between min-h-[64px] py-2">
                 <div class="flex items-center cursor-pointer select-none mr-2 shrink-0" onclick="goHome()">
@@ -342,7 +342,6 @@
             return lista.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }));
         }
 
-        // Limpia cadenas con formato ISO (e.g., 2026-10-15T06:00:00.000Z -> 2026-10-15)
         function formatearFecha(f) {
             if (!f) return '';
             if (typeof f === 'string' && f.includes('T')) {
