@@ -85,7 +85,7 @@
                     </button>
                 </div>
                 
-                <!-- 2. Debajo de ellos: Usuario conectado, Administrar Usuarios (si es Admin) y botón Salir -->
+                <!-- 2. Debajo de ellos: Usuario conectado, Administrar Usuarios y botón Salir -->
                 <div class="flex flex-wrap items-center gap-2 w-full">
                     <span id="userStatusBadge" class="hidden text-[11px] sm:text-xs bg-purple-900/90 text-purple-100 border border-purple-600 px-2.5 sm:px-3 py-1 rounded-full max-w-[210px] sm:max-w-xs truncate"></span>
                     
@@ -104,7 +104,7 @@
                     </button>
                 </div>
 
-                <!-- 3. Hasta abajo a la derecha: Botón + Nuevo Aspirante -->
+                <!-- 3. Hasta abajo a la derecha: Botón de acción principal -->
                 <div class="flex justify-end w-full">
                     <button id="btnNuevoRegistro" onclick="handleMainNewAction()" class="bg-fuchsia-600 hover:bg-fuchsia-500 px-3.5 sm:px-4 py-1.5 rounded-full font-bold transition duration-150 ease-in-out shadow text-xs sm:text-sm hidden whitespace-nowrap flex items-center">
                         <i class="fas fa-plus mr-1.5"></i> <span id="btnNuevoRegistroText">Nuevo Aspirante</span>
@@ -116,198 +116,95 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- PANEL DE ADMINISTRACIÓN DE USUARIOS -->
-<section id="panelAdministracionUsuarios" class="hidden bg-white rounded-lg shadow-md p-6 mb-6">
-    <button
-    type="button"
-    onclick="cerrarPanelUsuarios()"
-    class="mb-5 text-purple-700 hover:text-purple-900 font-semibold flex items-center">
-    <i class="fas fa-arrow-left mr-2"></i>
-    Volver al Directorio
-    </button>
-    <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
-        <div>
-            <h2 class="text-2xl font-bold text-purple-800">
-                <i class="fas fa-users-cog mr-2"></i>
-                Administración de Usuarios
-            </h2>
-            <p class="text-sm text-gray-500 mt-1">
-                Gestión de cuentas y permisos de acceso.
-            </p>
-        </div>
+        <section id="panelAdministracionUsuarios" class="hidden bg-white rounded-lg shadow-md p-6 mb-6">
+            <button type="button" onclick="cerrarPanelUsuarios()" class="mb-5 text-purple-700 hover:text-purple-900 font-semibold flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> Volver al Directorio
+            </button>
+            <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-purple-800">
+                        <i class="fas fa-users-cog mr-2"></i> Administración de Usuarios
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1">Gestión de cuentas y permisos de acceso.</p>
+                </div>
+                <button type="button" id="btnCrearUsuario" onclick="abrirModalNuevoUsuario()" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-md font-semibold">
+                    <i class="fas fa-user-plus mr-2"></i> Nuevo Usuario
+                </button>
+            </div>
 
-        <button type="button"
-            id="btnCrearUsuario"
-            onclick="abrirModalNuevoUsuario()"
-            class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-md font-semibold">
-            <i class="fas fa-user-plus mr-2"></i>
-            Nuevo Usuario
-        </button>
-    </div>
-
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="px-4 py-3 text-left text-sm">Usuario</th>
-                    <th class="px-4 py-3 text-left text-sm">Nombre</th>
-                    <th class="px-4 py-3 text-left text-sm">Rol</th>
-                    <th class="px-4 py-3 text-left text-sm">Estado</th>
-                    <th class="px-4 py-3 text-left text-sm">Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="tablaUsuarios" class="divide-y divide-gray-200">
-                <tr>
-                    <td colspan="5" class="px-4 py-6 text-center text-gray-500">
-                        Pendiente de conectar con Google Apps Script.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-</section>
-<!-- FIN DEL PANEL DE ADMINISTRACIÓN DE USUARIOS -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-sm">Usuario</th>
+                            <th class="px-4 py-3 text-left text-sm">Nombre</th>
+                            <th class="px-4 py-3 text-left text-sm">Rol</th>
+                            <th class="px-4 py-3 text-left text-sm">Estado</th>
+                            <th class="px-4 py-3 text-left text-sm">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaUsuarios" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="5" class="px-4 py-6 text-center text-gray-500">Pendiente de conectar con Google Apps Script.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         <!-- MODAL PARA CREAR USUARIOS -->
-<div id="modalNuevoUsuario"
-     class="fixed inset-0 bg-black bg-opacity-60 hidden z-[300] flex items-center justify-center">
+        <div id="modalNuevoUsuario" class="fixed inset-0 bg-black bg-opacity-60 hidden z-[300] flex items-center justify-center">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+                <h3 class="text-xl font-bold text-purple-800 mb-5">
+                    <i class="fas fa-user-plus mr-2"></i> Crear Nuevo Usuario
+                </h3>
+                <form id="formNuevoUsuario" autocomplete="off" onsubmit="guardarNuevoUsuario(event)">
+                    <label class="block text-sm font-semibold mb-1">Nombre de usuario</label>
+                    <input id="nuevoUsuarioUsername" type="text" maxlength="40" autocomplete="off" required class="w-full border rounded-md px-3 py-2 mb-4" placeholder="Ejemplo: juan.perez">
 
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+                    <label class="block text-sm font-semibold mb-1">Nombre completo</label>
+                    <input id="nuevoUsuarioNombre" type="text" maxlength="100" required class="w-full border rounded-md px-3 py-2 mb-4" placeholder="Nombre y apellidos">
 
-        <h3 class="text-xl font-bold text-purple-800 mb-5">
-            <i class="fas fa-user-plus mr-2"></i>
-            Crear Nuevo Usuario
-        </h3>
+                    <label class="block text-sm font-semibold mb-1">Contraseña inicial</label>
+                    <input id="nuevoUsuarioPassword" type="password" minlength="10" maxlength="200" autocomplete="new-password" required class="w-full border rounded-md px-3 py-2 mb-4" placeholder="Mínimo 10 caracteres">
 
-        <form id="formNuevoUsuario" autocomplete="off" onsubmit="guardarNuevoUsuario(event)">
+                    <label class="block text-sm font-semibold mb-1">Rol del usuario</label>
+                    <select id="nuevoUsuarioRol" class="w-full border rounded-md px-3 py-2 mb-6">
+                        <option value="editor">Editor</option>
+                    </select>
 
-            <label class="block text-sm font-semibold mb-1">
-                Nombre de usuario
-            </label>
-            <input id="nuevoUsuarioUsername"
-                   type="text"
-                   maxlength="40"
-                   autocomplete="off"
-                   required
-                   class="w-full border rounded-md px-3 py-2 mb-4"
-                   placeholder="Ejemplo: juan.perez">
-
-            <label class="block text-sm font-semibold mb-1">
-                Nombre completo
-            </label>
-            <input id="nuevoUsuarioNombre"
-                   type="text"
-                   maxlength="100"
-                   required
-                   class="w-full border rounded-md px-3 py-2 mb-4"
-                   placeholder="Nombre y apellidos">
-
-            <label class="block text-sm font-semibold mb-1">
-                Contraseña inicial
-            </label>
-            <input id="nuevoUsuarioPassword"
-                   type="password"
-                   minlength="10"
-                   maxlength="200"
-                   autocomplete="new-password"
-                   required
-                   class="w-full border rounded-md px-3 py-2 mb-4"
-                   placeholder="Mínimo 10 caracteres">
-
-            <label class="block text-sm font-semibold mb-1">
-                Rol del usuario
-            </label>
-            <select id="nuevoUsuarioRol"
-                    class="w-full border rounded-md px-3 py-2 mb-6">
-                <option value="editor">Editor</option>
-            </select>
-
-            <div class="flex justify-end gap-3">
-                <button type="button"
-                        onclick="cerrarModalNuevoUsuario()"
-                        class="px-4 py-2 border rounded-md text-gray-700">
-                    Cancelar
-                </button>
-
-                <button type="submit"
-                        class="bg-purple-700 text-white px-4 py-2 rounded-md font-semibold">
-                    Crear Usuario
-                </button>
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="cerrarModalNuevoUsuario()" class="px-4 py-2 border rounded-md text-gray-700">Cancelar</button>
+                        <button type="submit" class="bg-purple-700 text-white px-4 py-2 rounded-md font-semibold">Crear Usuario</button>
+                    </div>
+                </form>
             </div>
+        </div>
 
-        </form>
-    </div>
-</div>
-<!-- FIN MODAL NUEVO USUARIO -->
-<!-- MODAL PARA RESTABLECER CONTRASEÑA -->
-<div id="modalRestablecerPassword"
-     class="fixed inset-0 bg-black bg-opacity-60 hidden z-[310] flex items-center justify-center">
+        <!-- MODAL PARA RESTABLECER CONTRASEÑA -->
+        <div id="modalRestablecerPassword" class="fixed inset-0 bg-black bg-opacity-60 hidden z-[310] flex items-center justify-center">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+                <h3 class="text-xl font-bold text-purple-800 mb-4">
+                    <i class="fas fa-key mr-2"></i> Restablecer contraseña
+                </h3>
+                <p class="text-sm text-gray-600 mb-4">Usuario: <strong id="nombreUsuarioRestablecer"></strong></p>
 
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+                <form id="formRestablecerPassword" autocomplete="off" onsubmit="guardarRestablecimientoPassword(event)">
+                    <label for="passwordRestablecer" class="block text-sm font-semibold mb-1">Nueva contraseña</label>
+                    <input id="passwordRestablecer" type="password" minlength="10" maxlength="200" autocomplete="new-password" required class="w-full border rounded-md px-3 py-2 mb-4" placeholder="Mínimo 10 caracteres">
 
-        <h3 class="text-xl font-bold text-purple-800 mb-4">
-            <i class="fas fa-key mr-2"></i>
-            Restablecer contraseña
-        </h3>
+                    <label for="passwordRestablecerConfirmar" class="block text-sm font-semibold mb-1">Confirmar nueva contraseña</label>
+                    <input id="passwordRestablecerConfirmar" type="password" minlength="10" maxlength="200" autocomplete="new-password" required class="w-full border rounded-md px-3 py-2 mb-6" placeholder="Repite la contraseña">
 
-        <p class="text-sm text-gray-600 mb-4">
-            Usuario:
-            <strong id="nombreUsuarioRestablecer"></strong>
-        </p>
-
-        <form id="formRestablecerPassword"
-      autocomplete="off"
-      onsubmit="guardarRestablecimientoPassword(event)">
-
-            <label for="passwordRestablecer"
-                   class="block text-sm font-semibold mb-1">
-                Nueva contraseña
-            </label>
-
-            <input id="passwordRestablecer"
-                   type="password"
-                   minlength="10"
-                   maxlength="200"
-                   autocomplete="new-password"
-                   required
-                   class="w-full border rounded-md px-3 py-2 mb-4"
-                   placeholder="Mínimo 10 caracteres">
-
-            <label for="passwordRestablecerConfirmar"
-                   class="block text-sm font-semibold mb-1">
-                Confirmar nueva contraseña
-            </label>
-
-            <input id="passwordRestablecerConfirmar"
-                   type="password"
-                   minlength="10"
-                   maxlength="200"
-                   autocomplete="new-password"
-                   required
-                   class="w-full border rounded-md px-3 py-2 mb-6"
-                   placeholder="Repite la contraseña">
-
-            <div class="flex justify-end gap-3">
-
-                <button type="button"
-                        onclick="cerrarRestablecerPassword()"
-                        class="px-4 py-2 border rounded-md text-gray-700">
-                    Cancelar
-                </button>
-
-                <button type="submit"
-                        class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-md font-semibold">
-                    Guardar contraseña
-                </button>
-
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="cerrarRestablecerPassword()" class="px-4 py-2 border rounded-md text-gray-700">Cancelar</button>
+                        <button type="submit" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-md font-semibold">Guardar contraseña</button>
+                    </div>
+                </form>
             </div>
-        </form>
-    </div>
-</div>
-<!-- FIN MODAL RESTABLECER CONTRASEÑA -->
-        <!-- ========================================================= -->
-        <!-- MÓDULO 1: DIRECTORIO DE ASPIRANTES                        -->
-        <!-- ========================================================= -->
+        </div>
+
+        <!-- MÓDULO 1: DIRECTORIO DE ASPIRANTES -->
         <div id="moduleAspirantes">
             <div id="dashboardView">
                 <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-3">
@@ -315,15 +212,9 @@
                         <h1 class="text-2xl font-bold text-gray-800">Directorio de Aspirantes</h1>
                         <p class="text-sm text-gray-500">Aspirantes a cargos de elección popular en el Estado de Tlaxcala.</p>
                     </div>
-                    <!-- <div class="flex items-center space-x-3"> -->
                     <div class="flex flex-wrap items-center gap-2">
-                        <button
-                            type="button"
-                            id="btnActualizarDatos"
-                            onclick="actualizarDatosManualmente()"
-                            class="bg-purple-600 hover:bg-purple-500 text-white ring-1 ring-purple-400 px-3 py-2 rounded-lg font-bold transition duration-150 shadow-sm flex items-center text-sm">
-                            <i class="fas fa-sync-alt mr-2"></i>
-                            Actualizar datos
+                        <button type="button" id="btnActualizarDatos" onclick="actualizarDatosManualmente()" class="bg-purple-600 hover:bg-purple-500 text-white ring-1 ring-purple-400 px-3 py-2 rounded-lg font-bold transition duration-150 shadow-sm flex items-center text-sm">
+                            <i class="fas fa-sync-alt mr-2"></i> Actualizar datos
                         </button>
                         <div class="text-sm font-medium text-purple-800 bg-purple-100 px-3 py-1 rounded-full" id="totalCount">0 registrados</div>
                         <button id="btnExportDashboard" onclick="exportarDashboardPDF()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-sm flex items-center">
@@ -475,9 +366,7 @@
             </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- MÓDULO 2: AUTORIDADES ELECTORALES (INE / ITE) Y SEDES     -->
-        <!-- ========================================================= -->
+        <!-- MÓDULO 2: AUTORIDADES ELECTORALES (INE / ITE) Y SEDES -->
         <div id="moduleAutoridades" class="hidden">
             
             <div id="autoridadesDashboardView">
@@ -507,7 +396,7 @@
                 <!-- SUB-VISTA A: FUNCIONARIADO Y CONSEJOS -->
                 <div id="subViewFuncionarios">
                     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Buscar Autoridad</label>
                                 <div class="relative">
@@ -535,6 +424,14 @@
                                     <option value="Todas">Todas las sedes</option>
                                 </select>
                             </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Filtrar por Cargo</label>
+                                <select id="filterAutCargo" onchange="renderAutoridades()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="Todos">Todos los cargos</option>
+                                </select>
+                            </div>
+                        </div>
+
                         </div>
 
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mt-4 pt-3 border-t border-gray-100 gap-3">
@@ -811,24 +708,23 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Órgano Colegiado / Área *</label>
-                        <select id="formAutOrgano" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
-<option value="">Selecciona una opción...</option>
-<option value="Consejo Local (Tlaxcala)">Consejo Local (Tlaxcala)</option>
-<option value="Junta Local Ejecutiva">Junta Local Ejecutiva</option>
-<option value="Consejo Distrital 01 (Apizaco)">Consejo Distrital 01 (Apizaco)</option>
-<option value="Consejo Distrital 02 (Tlaxcala)">Consejo Distrital 02 (Tlaxcala)</option>
-<option value="Consejo Distrital 03 (Zacatelco)">Consejo Distrital 03 (Zacatelco)</option>
-<option value="Consejo General (ITE)">Consejo General (ITE)</option>
-<option value="Junta General Ejecutiva (ITE)">Junta General Ejecutiva (ITE)</option>
-<option value="Direcciones Ejecutivas y Áreas Técnicas (ITE)">Direcciones Ejecutivas y Áreas Técnicas (ITE)</option>
-<option value="Consejo Distrital Electoral (ITE)">Consejo Distrital Electoral (ITE)</option>
-<option value="Consejo Municipal Electoral (ITE)">Consejo Municipal Electoral (ITE)</option>
-</select>
+                        <select id="formAutOrgano" onchange="handleAutoridadOrganoChange()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+                            <option value="">Selecciona una opción...</option>
+                            <option value="Consejo Local (Tlaxcala)">Consejo Local (Tlaxcala)</option>
+                            <option value="Junta Local Ejecutiva">Junta Local Ejecutiva</option>
+                            <option value="Consejo Distrital 01 (Apizaco)">Consejo Distrital 01 (Apizaco)</option>
+                            <option value="Consejo Distrital 02 (Tlaxcala)">Consejo Distrital 02 (Tlaxcala)</option>
+                            <option value="Consejo Distrital 03 (Zacatelco)">Consejo Distrital 03 (Zacatelco)</option>
+                            <option value="Consejo General (ITE)">Consejo General (ITE)</option>
+                            <option value="Junta General Ejecutiva (ITE)">Junta General Ejecutiva (ITE)</option>
+                            <option value="Direcciones Ejecutivas y Áreas Técnicas (ITE)">Direcciones Ejecutivas y Áreas Técnicas (ITE)</option>
+                            <option value="Consejo Distrital Electoral (ITE)">Consejo Distrital Electoral (ITE)</option>
+                            <option value="Consejo Municipal Electoral">Consejo Municipal Electoral</option>
+                        </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Ámbito / Distrito</label>
                         <select id="formAutAmbito" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
-                            <option value="">Selecciona una opción...</option>
                             <option value="Estatal / Oficinas Centrales">Estatal / Oficinas Centrales</option>
                             <option value="Distrito Federal 01">Distrito Federal 01</option>
                             <option value="Distrito Federal 02">Distrito Federal 02</option>
@@ -850,27 +746,47 @@
                             <option value="Distrito Local 15">Distrito Local 15</option>
                             <option value="Municipal">Municipal</option>
                         </select>
+                        <!-- Contenedor dinámico del Municipio -->
+                        <div id="containerAutMunicipio" class="hidden mt-2 bg-purple-50 p-2 rounded border border-purple-100">
+                            <label class="block text-xs font-bold text-purple-700 uppercase mb-1">Seleccionar Municipio</label>
+                            <select id="formAutMunicipioSelect" class="w-full border border-gray-300 rounded-md px-3 py-1 text-sm">
+                                <option value="">Selecciona el municipio...</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Puesto / Cargo *</label>
-                        <select id="formAutPuesto" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
-<option value="">Selecciona una opción...</option>
-<option value="Consejera/o Presidenta/e">Consejera/o Presidenta/e</option>
-<option value="Consejera/o Electoral">Consejera/o Electoral</option>
-<option value="Secretaria/o del Consejo">Secretaria/o del Consejo</option>
-<option value="Vocal Ejecutivo/a">Vocal Ejecutivo/a</option>
-<option value="Vocal Secretario/a">Vocal Secretario/a</option>
-<option value="Vocal de Organización Electoral">Vocal de Organización Electoral</option>
-<option value="Vocal del Registro Federal de Electores">Vocal del Registro Federal de Electores</option>
-<option value="Vocal de Capacitación Electoral y Educación Cívica">Vocal de Capacitación Electoral y Educación Cívica</option>
-<option value="Director/a Ejecutivo/a">Director/a Ejecutivo/a</option>
-<option value="Titular de Unidad Técnica">Titular de Unidad Técnica</option>
-<option value="Representante de Partido Político">Representante de Partido Político</option>
-<option value="Secretario/a Ejecutivo/a">Secretario/a Ejecutivo/a</option>
-</select>
+                        <select id="formAutPuesto" onchange="handleAutoridadPuestoChange()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+                            <option value="">Selecciona una opción...</option>
+                            <option value="Consejera/o Presidenta/e">Consejera/o Presidenta/e</option>
+                            <option value="Consejera/o Electoral">Consejera/o Electoral</option>
+                            <option value="Secretaria/o del Consejo">Secretaria/o del Consejo</option>
+                            <option value="Vocal Ejecutivo/a">Vocal Ejecutivo/a</option>
+                            <option value="Vocal Secretario/a">Vocal Secretario/a</option>
+                            <option value="Vocal de Organización Electoral">Vocal de Organización Electoral</option>
+                            <option value="Vocal del Registro Federal de Electores">Vocal del Registro Federal de Electores</option>
+                            <option value="Vocal de Capacitación Electoral y Educación Cívica">Vocal de Capacitación Electoral y Educación Cívica</option>
+                            <option value="Director/a Ejecutivo/a">Director/a Ejecutivo/a</option>
+                            <option value="Titular de Unidad Técnica">Titular de Unidad Técnica</option>
+                            <option value="Representante de Partido Político">Representante de Partido Político</option>
+                            <option value="Secretario/a Ejecutivo/a">Secretario/a Ejecutivo/a</option>
+                        </select>
+                        <!-- Contenedor dinámico de Fórmula para Consejera/o Electoral -->
+                        <div id="containerAutFormula" class="hidden mt-2 bg-purple-50 p-2 rounded border border-purple-100">
+                            <label class="block text-xs font-bold text-purple-700 uppercase mb-1">Fórmula (Opcional)</label>
+                            <select id="formAutFormulaSelect" class="w-full border border-gray-300 rounded-md px-3 py-1 text-sm">
+                                <option value="">Sin fórmula específica</option>
+                                <option value="Fórmula 1">Fórmula 1</option>
+                                <option value="Fórmula 2">Fórmula 2</option>
+                                <option value="Fórmula 3">Fórmula 3</option>
+                                <option value="Fórmula 4">Fórmula 4</option>
+                                <option value="Fórmula 5">Fórmula 5</option>
+                                <option value="Fórmula 6">Fórmula 6</option>
+                            </select>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Calidad de Participación</label>
@@ -964,7 +880,6 @@
             </div>
             <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
                 <input type="hidden" id="formSedeIsEdit">
-                <input type="hidden" id="formSedeIsEdit">
                 <input type="hidden" id="formSedeId">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -975,9 +890,10 @@
                             <option value="ITE">ITE</option>
                         </select>
                     </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nombre de la Sede *</label>
-                    <input type="text" id="formSedeNombre" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="Ej. Junta Local Ejecutiva Tlaxcala">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nombre de la Sede *</label>
+                        <input type="text" id="formSedeNombre" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="Ej. Junta Local Ejecutiva Tlaxcala">
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -1123,21 +1039,11 @@
             }
         }
 
-     //       function checkSavedSession() {
-            // Las sesiones ya no se restauran desde localStorage. Esto elimina contraseñas/tokens persistentes.
-     //       try { localStorage.removeItem('directorio_electoral_sesion_activa'); } catch (e) {}
-      //      appState.role = 'guest';
-      //      appState.userName = 'Invitado';
-      //     appState.sessionToken = null;
-      //      appState.isReadOnly = true;
-      //      return false;
-      //  }
         const CLAVE_SESION_TAB = 'directorio_tlaxcala_sesion_tab_v1';
         const TIEMPO_MAX_SESION_MS = 2 * 60 * 60 * 1000; // 2 horas de vigencia en la pestaña
 
         function guardarSesionEnPestana() {
             try {
-                // Solo se guarda el token temporal y el rol en la pestaña activa (nunca la contraseña)
                 sessionStorage.setItem(CLAVE_SESION_TAB, JSON.stringify({
                     role: appState.role,
                     userName: appState.userName,
@@ -1166,14 +1072,12 @@
                     const sesion = JSON.parse(raw);
                     const vigente = sesion.timestamp && (Date.now() - sesion.timestamp < TIEMPO_MAX_SESION_MS);
 
-                    // Restaurar si es un editor/admin con token o si ya había entrado como invitado
                     if (vigente && ((sesion.role !== 'guest' && sesion.sessionToken) || sesion.role === 'guest')) {
                         appState.role = sesion.role;
                         appState.userName = sesion.userName || 'Invitado';
                         appState.sessionToken = sesion.sessionToken || null;
                         appState.isReadOnly = Boolean(sesion.isReadOnly);
 
-                        // Renovar marca de tiempo tras la recarga
                         guardarSesionEnPestana();
 
                         document.getElementById('loginOverlay').classList.add('hidden');
@@ -1196,332 +1100,273 @@
         }
 
         async function cargarUsuariosPanel() {
-    if (appState.role !== 'admin' || !appState.sessionToken) {
-        alert('Se requiere una sesión de Administrador.');
-        return;
-    }
+            if (appState.role !== 'admin' || !appState.sessionToken) {
+                alert('Se requiere una sesión de Administrador.');
+                return;
+            }
 
-    const tabla = document.getElementById('tablaUsuarios');
+            const tabla = document.getElementById('tablaUsuarios');
+            tabla.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-gray-500">Cargando usuarios...</td></tr>`;
 
-    tabla.innerHTML = `
-        <tr>
-            <td colspan="5" class="px-4 py-6 text-center text-gray-500">
-                Cargando usuarios...
-            </td>
-        </tr>
-    `;
+            try {
+                const respuesta = await postData({
+                    accion: 'listarUsuarios',
+                    sessionToken: appState.sessionToken
+                });
 
-    try {
-        const respuesta = await postData({
-            accion: 'listarUsuarios',
-            sessionToken: appState.sessionToken
-        });
+                if (!respuesta || !respuesta.exito) {
+                    throw new Error(respuesta?.mensaje || 'No fue posible consultar los usuarios.');
+                }
 
-        if (!respuesta || !respuesta.exito) {
-            throw new Error(
-                respuesta?.mensaje || 'No fue posible consultar los usuarios.'
-            );
+                tabla.innerHTML = '';
+
+                if (respuesta.usuarios.length === 0) {
+                    const fila = document.createElement('tr');
+                    const celda = document.createElement('td');
+                    celda.colSpan = 5;
+                    celda.className = 'px-4 py-6 text-center text-gray-500';
+                    celda.textContent = 'No hay usuarios registrados.';
+                    fila.appendChild(celda);
+                    tabla.appendChild(fila);
+                    return;
+                }
+
+                respuesta.usuarios.forEach(usuario => {
+                    const fila = document.createElement('tr');
+                    const valores = [
+                        usuario.usuario,
+                        usuario.nombre,
+                        usuario.rol === 'admin' ? 'Administrador' : 'Editor',
+                        usuario.activo ? 'Activo' : 'Inactivo'
+                    ];
+
+                    valores.forEach(valor => {
+                        const celda = document.createElement('td');
+                        celda.className = 'px-4 py-3 text-sm text-gray-700';
+                        celda.textContent = valor || '';
+                        fila.appendChild(celda);
+                    });
+
+                    const acciones = document.createElement('td');
+                    acciones.className = 'px-4 py-3 text-sm text-gray-400';
+                    
+                    const botonRestablecer = document.createElement('button');
+                    botonRestablecer.type = 'button';
+                    botonRestablecer.className = 'bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-xs font-semibold';
+                    botonRestablecer.textContent = 'Restablecer contraseña';
+                    botonRestablecer.addEventListener('click', () => {
+                        abrirRestablecerPassword(usuario.usuario);
+                    });
+                    acciones.appendChild(botonRestablecer);
+
+                    const botonEstado = document.createElement('button');
+                    botonEstado.type = 'button';
+                    botonEstado.className = usuario.activo
+                        ? 'bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-xs font-semibold ml-2'
+                        : 'bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-xs font-semibold ml-2';
+                    botonEstado.textContent = usuario.activo ? 'Desactivar' : 'Activar';
+                    botonEstado.addEventListener('click', () => {
+                        cambiarEstadoUsuarioDesdePanel(usuario.usuario, !usuario.activo);
+                    });
+                    acciones.appendChild(botonEstado);
+
+                    fila.appendChild(acciones);
+                    tabla.appendChild(fila);
+                });
+
+            } catch (error) {
+                tabla.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-red-600">Error al consultar los usuarios.</td></tr>`;
+                console.error('Error al cargar usuarios:', error);
+            }
         }
 
-        tabla.innerHTML = '';
+        async function cambiarEstadoUsuarioDesdePanel(usuarioObjetivo, nuevoEstado) {
+            if (appState.role !== 'admin' || !appState.sessionToken) {
+                alert('Se requiere una sesión de Administrador.');
+                return;
+            }
 
-        if (respuesta.usuarios.length === 0) {
-            const fila = document.createElement('tr');
-            const celda = document.createElement('td');
-            celda.colSpan = 5;
-            celda.className = 'px-4 py-6 text-center text-gray-500';
-            celda.textContent = 'No hay usuarios registrados.';
-            fila.appendChild(celda);
-            tabla.appendChild(fila);
-            return;
+            const usuario = String(usuarioObjetivo || '').trim();
+            const activar = nuevoEstado === true;
+            const operacion = activar ? 'activar' : 'desactivar';
+
+            if (!confirm(`¿Estás seguro de que deseas ${operacion} al usuario "${usuario}"?`)) return;
+
+            try {
+                const respuesta = await postData({
+                    accion: 'cambiarEstadoUsuario',
+                    sessionToken: appState.sessionToken,
+                    usuarioObjetivo: usuario,
+                    activo: activar
+                });
+
+                if (!respuesta || !respuesta.exito) {
+                    throw new Error(respuesta?.mensaje || 'No fue posible cambiar el estado del usuario.');
+                }
+
+                alert(respuesta.mensaje || 'Estado actualizado correctamente.');
+                await cargarUsuariosPanel();
+            } catch (error) {
+                console.error('Error al cambiar estado del usuario:', error);
+                alert(error.message || 'Ocurrió un error al actualizar el usuario.');
+            }
         }
-
-        respuesta.usuarios.forEach(usuario => {
-            const fila = document.createElement('tr');
-
-            const valores = [
-                usuario.usuario,
-                usuario.nombre,
-                usuario.rol === 'admin' ? 'Administrador' : 'Editor',
-                usuario.activo ? 'Activo' : 'Inactivo'
-            ];
-
-            valores.forEach(valor => {
-                const celda = document.createElement('td');
-                celda.className = 'px-4 py-3 text-sm text-gray-700';
-                celda.textContent = valor || '';
-                fila.appendChild(celda);
-            });
-
-            const acciones = document.createElement('td');
-            acciones.className = 'px-4 py-3 text-sm text-gray-400';
-            const botonRestablecer = document.createElement('button');
-
-botonRestablecer.type = 'button';
-botonRestablecer.className =
-    'bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-xs font-semibold';
-
-botonRestablecer.textContent = 'Restablecer contraseña';
-
-botonRestablecer.addEventListener('click', () => {
-    abrirRestablecerPassword(usuario.usuario);
-});
-
-acciones.appendChild(botonRestablecer);
-const botonEstado = document.createElement('button');
-
-botonEstado.type = 'button';
-botonEstado.className = usuario.activo
-    ? 'bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-xs font-semibold ml-2'
-    : 'bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-xs font-semibold ml-2';
-
-botonEstado.textContent = usuario.activo
-    ? 'Desactivar'
-    : 'Activar';
-
-botonEstado.addEventListener('click', () => {
-    cambiarEstadoUsuarioDesdePanel(
-        usuario.usuario,
-        !usuario.activo
-    );
-});
-
-acciones.appendChild(botonEstado);
-            fila.appendChild(acciones);
-
-            tabla.appendChild(fila);
-        });
-
-    } catch (error) {
-        tabla.innerHTML = `
-            <tr>
-                <td colspan="5" class="px-4 py-6 text-center text-red-600">
-                    Error al consultar los usuarios.
-                </td>
-            </tr>
-        `;
-
-        console.error('Error al cargar usuarios:', error);
-    }
-}
-
-async function cambiarEstadoUsuarioDesdePanel(usuarioObjetivo, nuevoEstado) {
-    if (appState.role !== 'admin' || !appState.sessionToken) {
-        alert('Se requiere una sesión de Administrador.');
-        return;
-    }
-
-    const usuario = String(usuarioObjetivo || '').trim();
-    const activar = nuevoEstado === true;
-
-    const operacion = activar ? 'activar' : 'desactivar';
-
-    const confirmado = confirm(
-        `¿Estás seguro de que deseas ${operacion} al usuario "${usuario}"?`
-    );
-
-    if (!confirmado) return;
-
-    try {
-        const respuesta = await postData({
-            accion: 'cambiarEstadoUsuario',
-            sessionToken: appState.sessionToken,
-            usuarioObjetivo: usuario,
-            activo: activar
-        });
-
-        if (!respuesta || !respuesta.exito) {
-            throw new Error(
-                respuesta?.mensaje || 'No fue posible cambiar el estado del usuario.'
-            );
-        }
-
-        alert(respuesta.mensaje || 'Estado actualizado correctamente.');
-
-        await cargarUsuariosPanel();
-
-    } catch (error) {
-        console.error('Error al cambiar estado del usuario:', error);
-        alert(error.message || 'Ocurrió un error al actualizar el usuario.');
-    }
-}
 
         async function guardarNuevoUsuario(event) {
-    event.preventDefault();
+            event.preventDefault();
 
-    if (appState.role !== 'admin' || !appState.sessionToken) {
-        alert('Solo los administradores pueden crear usuarios.');
-        return;
-    }
-
-    const formulario = document.getElementById('formNuevoUsuario');
-
-    if (!formulario.reportValidity()) return;
-
-    const usuarioNuevo = {
-        usuario: document.getElementById('nuevoUsuarioUsername').value.trim(),
-        nombre: document.getElementById('nuevoUsuarioNombre').value.trim(),
-        password: document.getElementById('nuevoUsuarioPassword').value,
-        rol: 'editor'
-    };
-
-    const botonGuardar = formulario.querySelector('button[type="submit"]');
-
-    botonGuardar.disabled = true;
-    botonGuardar.textContent = 'Guardando...';
-
-    try {
-        const respuesta = await postData({
-            accion: 'crearUsuario',
-            sessionToken: appState.sessionToken,
-            usuarioNuevo: usuarioNuevo
-        });
-
-        if (!respuesta || !respuesta.exito) {
-            throw new Error(
-                respuesta?.mensaje || 'No fue posible crear el usuario.'
-            );
-        }
-
-        alert('Usuario creado correctamente.');
-
-        cerrarModalNuevoUsuario();
-        await cargarUsuariosPanel();
-
-    } catch (error) {
-        alert('Error al crear usuario: ' + error.message);
-        console.error('Error al crear usuario:', error);
-
-    } finally {
-        botonGuardar.disabled = false;
-        botonGuardar.textContent = 'Crear Usuario';
-    }
-}
-
-let usuarioSeleccionadoRestablecer = null;
-async function guardarRestablecimientoPassword(event) {
-    event.preventDefault();
-
-    if (appState.role !== 'admin' || !appState.sessionToken) {
-        alert('Solo los administradores pueden restablecer contraseñas.');
-        return;
-    }
-
-    if (!usuarioSeleccionadoRestablecer) {
-        alert('No se ha seleccionado un usuario.');
-        return;
-    }
-
-    const formulario = document.getElementById('formRestablecerPassword');
-
-    if (!formulario.reportValidity()) return;
-
-    const password = document.getElementById('passwordRestablecer').value;
-    const confirmacion = document.getElementById('passwordRestablecerConfirmar').value;
-
-    if (password !== confirmacion) {
-        alert('Las contraseñas no coinciden.');
-        return;
-    }
-
-    const botonGuardar = formulario.querySelector('button[type="submit"]');
-
-    botonGuardar.disabled = true;
-    botonGuardar.textContent = 'Guardando...';
-
-    try {
-        const respuesta = await postData({
-            accion: 'restablecerPasswordUsuario',
-            sessionToken: appState.sessionToken,
-            usuarioObjetivo: {
-                usuario: usuarioSeleccionadoRestablecer,
-                password: password
+            if (appState.role !== 'admin' || !appState.sessionToken) {
+                alert('Solo los administradores pueden crear usuarios.');
+                return;
             }
-        });
 
-        if (!respuesta || !respuesta.exito) {
-            throw new Error(
-                respuesta?.mensaje || 'No fue posible restablecer la contraseña.'
-            );
+            const formulario = document.getElementById('formNuevoUsuario');
+            if (!formulario.reportValidity()) return;
+
+            const usuarioNuevo = {
+                usuario: document.getElementById('nuevoUsuarioUsername').value.trim(),
+                nombre: document.getElementById('nuevoUsuarioNombre').value.trim(),
+                password: document.getElementById('nuevoUsuarioPassword').value,
+                rol: 'editor'
+            };
+
+            const botonGuardar = formulario.querySelector('button[type="submit"]');
+            botonGuardar.disabled = true;
+            botonGuardar.textContent = 'Guardando...';
+
+            try {
+                const respuesta = await postData({
+                    accion: 'crearUsuario',
+                    sessionToken: appState.sessionToken,
+                    usuarioNuevo: usuarioNuevo
+                });
+
+                if (!respuesta || !respuesta.exito) {
+                    throw new Error(respuesta?.mensaje || 'No fue posible crear el usuario.');
+                }
+
+                alert('Usuario creado correctamente.');
+                cerrarModalNuevoUsuario();
+                await cargarUsuariosPanel();
+            } catch (error) {
+                alert('Error al crear usuario: ' + error.message);
+                console.error('Error al crear usuario:', error);
+            } finally {
+                botonGuardar.disabled = false;
+                botonGuardar.textContent = 'Crear Usuario';
+            }
         }
 
-        cerrarRestablecerPassword();
+        let usuarioSeleccionadoRestablecer = null;
+        async function guardarRestablecimientoPassword(event) {
+            event.preventDefault();
 
-        alert('Contraseña restablecida correctamente.');
+            if (appState.role !== 'admin' || !appState.sessionToken) {
+                alert('Solo los administradores pueden restablecer contraseñas.');
+                return;
+            }
 
-    } catch (error) {
-        alert('Error al restablecer contraseña: ' + error.message);
-        console.error('Error al restablecer contraseña:', error);
+            if (!usuarioSeleccionadoRestablecer) {
+                alert('No se ha seleccionado un usuario.');
+                return;
+            }
 
-    } finally {
-        botonGuardar.disabled = false;
-        botonGuardar.textContent = 'Guardar contraseña';
-    }
-}
-function abrirRestablecerPassword(usuario) {
-    if (appState.role !== 'admin' || !appState.sessionToken) {
-        alert('Solo los administradores pueden restablecer contraseñas.');
-        return;
-    }
+            const formulario = document.getElementById('formRestablecerPassword');
+            if (!formulario.reportValidity()) return;
 
-    usuarioSeleccionadoRestablecer = usuario;
+            const password = document.getElementById('passwordRestablecer').value;
+            const confirmacion = document.getElementById('passwordRestablecerConfirmar').value;
 
-    document.getElementById('formRestablecerPassword').reset();
+            if (password !== confirmacion) {
+                alert('Las contraseñas no coinciden.');
+                return;
+            }
 
-    document.getElementById('nombreUsuarioRestablecer').textContent = usuario;
+            const botonGuardar = formulario.querySelector('button[type="submit"]');
+            botonGuardar.disabled = true;
+            botonGuardar.textContent = 'Guardando...';
 
-    document.getElementById('modalRestablecerPassword').classList.remove('hidden');
-}
+            try {
+                const respuesta = await postData({
+                    accion: 'restablecerPasswordUsuario',
+                    sessionToken: appState.sessionToken,
+                    usuarioObjetivo: {
+                        usuario: usuarioSeleccionadoRestablecer,
+                        password: password
+                    }
+                });
 
-function cerrarRestablecerPassword() {
-    document.getElementById('modalRestablecerPassword').classList.add('hidden');
+                if (!respuesta || !respuesta.exito) {
+                    throw new Error(respuesta?.mensaje || 'No fue posible restablecer la contraseña.');
+                }
 
-    document.getElementById('formRestablecerPassword').reset();
+                cerrarRestablecerPassword();
+                alert('Contraseña restablecida correctamente.');
+            } catch (error) {
+                alert('Error al restablecer contraseña: ' + error.message);
+                console.error('Error al restablecer contraseña:', error);
+            } finally {
+                botonGuardar.disabled = false;
+                botonGuardar.textContent = 'Guardar contraseña';
+            }
+        }
 
-    usuarioSeleccionadoRestablecer = null;
-}
+        function abrirRestablecerPassword(usuario) {
+            if (appState.role !== 'admin' || !appState.sessionToken) {
+                alert('Solo los administradores pueden restablecer contraseñas.');
+                return;
+            }
+
+            usuarioSeleccionadoRestablecer = usuario;
+            document.getElementById('formRestablecerPassword').reset();
+            document.getElementById('nombreUsuarioRestablecer').textContent = usuario;
+            document.getElementById('modalRestablecerPassword').classList.remove('hidden');
+        }
+
+        function cerrarRestablecerPassword() {
+            document.getElementById('modalRestablecerPassword').classList.add('hidden');
+            document.getElementById('formRestablecerPassword').reset();
+            usuarioSeleccionadoRestablecer = null;
+        }
 
         function abrirModalNuevoUsuario() {
-    if (appState.role !== 'admin' || !appState.sessionToken) {
-        alert('Solo los administradores pueden crear usuarios.');
-        return;
-    }
+            if (appState.role !== 'admin' || !appState.sessionToken) {
+                alert('Solo los administradores pueden crear usuarios.');
+                return;
+            }
 
-    document.getElementById('formNuevoUsuario').reset();
-    document.getElementById('modalNuevoUsuario').classList.remove('hidden');
-}
+            document.getElementById('formNuevoUsuario').reset();
+            document.getElementById('modalNuevoUsuario').classList.remove('hidden');
+        }
 
-function cerrarModalNuevoUsuario() {
-    document.getElementById('modalNuevoUsuario').classList.add('hidden');
-    document.getElementById('formNuevoUsuario').reset();
-}
+        function cerrarModalNuevoUsuario() {
+            document.getElementById('modalNuevoUsuario').classList.add('hidden');
+            document.getElementById('formNuevoUsuario').reset();
+        }
 
         function abrirPanelUsuarios() {
-    if (appState.role !== 'admin') {
-        alert('Solo los administradores pueden acceder a esta sección.');
-        return;
-    }
+            if (appState.role !== 'admin') {
+                alert('Solo los administradores pueden acceder a esta sección.');
+                return;
+            }
 
-    document.getElementById('moduleAspirantes').classList.add('hidden');
-    document.getElementById('moduleAutoridades').classList.add('hidden');
+            document.getElementById('moduleAspirantes').classList.add('hidden');
+            document.getElementById('moduleAutoridades').classList.add('hidden');
+            document.getElementById('panelAdministracionUsuarios').classList.remove('hidden');
+            cargarUsuariosPanel();
+        }
 
-    document.getElementById('panelAdministracionUsuarios').classList.remove('hidden');
-    cargarUsuariosPanel();
-}
         function cerrarPanelUsuarios() {
             document.getElementById('panelAdministracionUsuarios').classList.add('hidden');
-
             switchModule('aspirantes');
         }
 
         async function logout() {
             if (!confirm("¿Deseas cerrar tu sesión?")) return;
 
-            ++ultimaSolicitudAcceso; // Descartar cualquier acceso que siga pendiente.
+            ++ultimaSolicitudAcceso;
             hideLoading();
             const token = appState.sessionToken;
-            // Revocar en el servidor antes de informar que el cierre fue confirmado.
-            // El acceso local se elimina siempre, incluso ante un fallo de red.
             let cierreConfirmado = !token;
             try {
                 if (token) {
@@ -1547,7 +1392,7 @@ function cerrarModalNuevoUsuario() {
                 goHome();
             }
             if (!cierreConfirmado) {
-                alert('Se cerró el acceso en este navegador, pero no fue posible confirmar el cierre de la sesión en el servidor. El token podría seguir vigente hasta su vencimiento.');
+                alert('Se cerró el acceso en este navegador, pero no fue posible confirmar el cierre de la sesión en el servidor.');
             }
         }
 
@@ -1585,9 +1430,7 @@ function cerrarModalNuevoUsuario() {
             showLoading('Verificando credenciales...');
             try {
                 const res = await postData({ accion: 'verificarContrasena', usuario, password: passInput, rol: rolSolicitado });
-                // Solo la última solicitud puede modificar la sesión o mostrar errores.
                 if (numeroSolicitud !== ultimaSolicitudAcceso) {
-                    // Si una solicitud descartada generó un token, revocarlo sin alterar la sesión actual.
                     if (res && res.exito && res.sessionToken && res.sessionToken !== appState.sessionToken) {
                         postData({ accion: 'cerrarSesion', sessionToken: res.sessionToken })
                             .catch(error => console.warn('No se pudo revocar el acceso descartado:', error));
@@ -1669,109 +1512,78 @@ function cerrarModalNuevoUsuario() {
         }
 
         const CACHE_DIRECTORIO_CLAVE = 'directorio_tlaxcala_datos_v1';
-const CACHE_DIRECTORIO_DURACION = 5 * 60 * 1000;
+        const CACHE_DIRECTORIO_DURACION = 5 * 60 * 1000;
 
-function obtenerDatosCacheDirectorio() {
-    try {
-        const guardado = sessionStorage.getItem(CACHE_DIRECTORIO_CLAVE);
-
-        if (!guardado) return null;
-
-        const cache = JSON.parse(guardado);
-
-        if (!cache || !cache.fecha || !cache.datos) {
-            return null;
+        function obtenerDatosCacheDirectorio() {
+            try {
+                const guardado = sessionStorage.getItem(CACHE_DIRECTORIO_CLAVE);
+                if (!guardado) return null;
+                const cache = JSON.parse(guardado);
+                if (!cache || !cache.fecha || !cache.datos) return null;
+                if (Date.now() - cache.fecha > CACHE_DIRECTORIO_DURACION) {
+                    sessionStorage.removeItem(CACHE_DIRECTORIO_CLAVE);
+                    return null;
+                }
+                return cache.datos;
+            } catch (error) {
+                console.warn('No fue posible leer la caché:', error);
+                return null;
+            }
         }
 
-        if (Date.now() - cache.fecha > CACHE_DIRECTORIO_DURACION) {
-            sessionStorage.removeItem(CACHE_DIRECTORIO_CLAVE);
-            return null;
+        function guardarDatosCacheDirectorio(datos) {
+            try {
+                sessionStorage.setItem(CACHE_DIRECTORIO_CLAVE, JSON.stringify({
+                    fecha: Date.now(),
+                    datos: datos
+                }));
+            } catch (error) {
+                console.warn('No fue posible guardar la caché:', error);
+            }
         }
 
-        return cache.datos;
-
-    } catch (error) {
-        console.warn('No fue posible leer la caché:', error);
-        return null;
-    }
-}
-
-function guardarDatosCacheDirectorio(datos) {
-    try {
-        sessionStorage.setItem(
-            CACHE_DIRECTORIO_CLAVE,
-            JSON.stringify({
-                fecha: Date.now(),
-                datos: datos
-            })
-        );
-    } catch (error) {
-        console.warn('No fue posible guardar la caché:', error);
-    }
-}
-
-function limpiarCacheDirectorio() {
-    try {
-        sessionStorage.removeItem(CACHE_DIRECTORIO_CLAVE);
-    } catch (error) {
-        console.warn('No fue posible limpiar la caché:', error);
-    }
-}
+        function limpiarCacheDirectorio() {
+            try {
+                sessionStorage.removeItem(CACHE_DIRECTORIO_CLAVE);
+            } catch (error) {
+                console.warn('No fue posible limpiar la caché:', error);
+            }
+        }
 
         async function actualizarDatosManualmente() {
-    const boton = document.getElementById('btnActualizarDatos');
-
-    if (boton) {
-        boton.disabled = true;
-        boton.textContent = 'Actualizando...';
-    }
-
-    try {
-        // Eliminar los datos temporales para forzar una nueva consulta.
-        limpiarCacheDirectorio();
-
-        // Descargar nuevamente la información desde Google Sheets.
-        await fetchInitialData();
-
-    } finally {
-        if (boton) {
-            boton.disabled = false;
-            boton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i> Actualizar datos';
+            const boton = document.getElementById('btnActualizarDatos');
+            if (boton) {
+                boton.disabled = true;
+                boton.textContent = 'Actualizando...';
+            }
+            try {
+                limpiarCacheDirectorio();
+                await fetchInitialData();
+            } finally {
+                if (boton) {
+                    boton.disabled = false;
+                    boton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i> Actualizar datos';
+                }
+            }
         }
-    }
-}
 
         async function fetchInitialData() {
             try { 
                 showLoading('Cargando base de datos...'); 
-              const inicioDescarga = performance.now();
+                const inicioDescarga = performance.now();
+                let data = obtenerDatosCacheDirectorio();
 
-let data = obtenerDatosCacheDirectorio();
-
-if (data) {
-    console.log('DIAGNÓSTICO - Datos recuperados de caché.');
-} else {
-    const response = await fetch(`${API_URL}?accion=obtenerTodo`, {
-        method: 'GET',
-        redirect: 'follow'
-    });
-
-    if (!response.ok) {
-        throw new Error('Error HTTP: ' + response.status);
-    }
-
-    data = await response.json();
-
-    if (data && data.exito === true && Array.isArray(data.aspirantes)) {
-        guardarDatosCacheDirectorio(data);
-    }
-}
-
-console.log(
-    'DIAGNÓSTICO - Descarga y lectura JSON:',
-    ((performance.now() - inicioDescarga) / 1000).toFixed(3),
-    'segundos'
-);
+                if (!data) {
+                    const response = await fetch(`${API_URL}?accion=obtenerTodo`, {
+                        method: 'GET',
+                        redirect: 'follow'
+                    });
+                    if (!response.ok) throw new Error('Error HTTP: ' + response.status);
+                    data = await response.json();
+                    if (data && data.exito === true && Array.isArray(data.aspirantes)) {
+                        guardarDatosCacheDirectorio(data);
+                    }
+                }
 
                 if (data && data.error === 'Acción no válida') {
                     const fallbackRes = await fetch(`${API_URL}?accion=obtenerDatos`, {
@@ -1788,115 +1600,82 @@ console.log(
                     appState.sedes = data.sedes || [];
                 }
 
-                const inicioRenderizado = performance.now();
-
-populateAutoridadesDynamicFilters();
-render();
-renderAutoridades();
-
-console.log(
-    'DIAGNÓSTICO - Procesamiento y renderizado:',
-    ((performance.now() - inicioRenderizado) / 1000).toFixed(3),
-    'segundos'
-);
+                populateAutoridadesDynamicFilters();
+                render();
+                renderAutoridades();
             } catch (error) { 
                 console.error("Error al obtener datos:", error); 
-                alert("No se pudo conectar con la base de datos. Asegúrate de eliminar archivos .gs duplicados en Apps Script y publicar una Nueva versión.");
+                alert("No se pudo conectar con la base de datos.");
             } finally { 
                 hideLoading(); 
             }
         }
 
         async function postData(payload) {
-    if (payload && payload.accion !== 'verificarContrasena' &&
-        payload.accion !== 'cerrarSesion' && !appState.sessionToken) {
-        return { exito: false, codigo: 'SESION_INVALIDA',
-                 mensaje: 'Debes iniciar sesión nuevamente.' };
-    }
-    // Vincular cada solicitud a la sesión activa al momento de enviarla.
-    const tokenSolicitud = payload && payload.sessionToken ? payload.sessionToken : null;
-    const response = await fetch(API_URL, {
-        method: 'POST',
-        redirect: 'follow',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-    });
-
-    const text = await response.text();
-
-    try {
-        const resultado = JSON.parse(text);
-        // Una respuesta tardía de otra sesión no debe modificar el estado actual.
-        // El cierre de sesión y el inicio de sesión no usan esta comprobación.
-        if (tokenSolicitud && tokenSolicitud !== appState.sessionToken) {
-            return { exito: false, codigo: 'RESPUESTA_SESION_ANTERIOR',
-                     mensaje: 'La respuesta pertenece a una sesión anterior. Vuelve a intentar la operación.' };
-        }
-        // Un token inválido obliga a volver al acceso sin recargar la página.
-        if (resultado && resultado.codigo === 'SESION_INVALIDA') {
-            if (appState.sessionToken) {
-                appState.sessionToken = null;
-                appState.role = 'guest';
-                appState.userName = 'Invitado';
-                appState.isReadOnly = true;
-                appState.selectedAspiranteId = null;
-                appState.selectedAutoridadId = null;
-                limpiarCacheDirectorio();
-                limpiarSesionEnPestana();
-                document.getElementById('panelAdministracionUsuarios').classList.add('hidden');
-                ['passwordModal', 'addModal', 'activityModal', 'publicationModal',
-                 'autoridadModal', 'sedeModal'].forEach(id => {
-                    const modal = document.getElementById(id);
-                    if (modal) modal.classList.add('hidden');
-                });
-                document.getElementById('adminPasswordInput').value = '';
-                document.getElementById('loginUsernameInput').value = '';
-                document.getElementById('loginOverlay').classList.remove('hidden');
-                applyPermissions();
-                goHome();
-                alert('Tu sesión venció o dejó de ser válida. Inicia sesión nuevamente. ' +
-                      'Los cambios que no se guardaron deberán capturarse de nuevo.');
+            if (payload && payload.accion !== 'verificarContrasena' &&
+                payload.accion !== 'cerrarSesion' && !appState.sessionToken) {
+                return { exito: false, codigo: 'SESION_INVALIDA', mensaje: 'Debes iniciar sesión nuevamente.' };
             }
-            return resultado;
+            const tokenSolicitud = payload && payload.sessionToken ? payload.sessionToken : null;
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+
+            const text = await response.text();
+
+            try {
+                const resultado = JSON.parse(text);
+                if (tokenSolicitud && tokenSolicitud !== appState.sessionToken) {
+                    return { exito: false, codigo: 'RESPUESTA_SESION_ANTERIOR', mensaje: 'La respuesta pertenece a una sesión anterior.' };
+                }
+                if (resultado && resultado.codigo === 'SESION_INVALIDA') {
+                    if (appState.sessionToken) {
+                        appState.sessionToken = null;
+                        appState.role = 'guest';
+                        appState.userName = 'Invitado';
+                        appState.isReadOnly = true;
+                        appState.selectedAspiranteId = null;
+                        appState.selectedAutoridadId = null;
+                        limpiarCacheDirectorio();
+                        limpiarSesionEnPestana();
+                        document.getElementById('panelAdministracionUsuarios').classList.add('hidden');
+                        ['passwordModal', 'addModal', 'activityModal', 'publicationModal', 'autoridadModal', 'sedeModal'].forEach(id => {
+                            const modal = document.getElementById(id);
+                            if (modal) modal.classList.add('hidden');
+                        });
+                        document.getElementById('adminPasswordInput').value = '';
+                        document.getElementById('loginUsernameInput').value = '';
+                        document.getElementById('loginOverlay').classList.remove('hidden');
+                        applyPermissions();
+                        goHome();
+                        alert('Tu sesión venció o dejó de ser válida. Inicia sesión nuevamente.');
+                    }
+                    return resultado;
+                }
+
+                const accionesQueModificanDatos = [
+                    'guardarAspirante', 'actualizarAspirante', 'eliminarAspirante',
+                    'guardarActividad', 'actualizarActividad', 'guardarPublicacion', 'actualizarPublicacion',
+                    'guardarAutoridad', 'actualizarAutoridad', 'eliminarAutoridad',
+                    'guardarSede', 'actualizarSede', 'eliminarSede'
+                ];
+
+                if (resultado && resultado.exito === true && payload && accionesQueModificanDatos.includes(payload.accion)) {
+                    limpiarCacheDirectorio();
+                }
+
+                return resultado;
+            } catch (err) {
+                if (err instanceof SyntaxError) {
+                    console.error("Respuesta no válida del servidor:", text);
+                    throw new Error("El servidor devolvió un error en lugar de JSON.");
+                }
+                throw err;
+            }
         }
-
-        const accionesQueModificanDatos = [
-            'guardarAspirante',
-            'actualizarAspirante',
-            'eliminarAspirante',
-            'guardarActividad',
-            'actualizarActividad',
-            'guardarPublicacion',
-            'actualizarPublicacion',
-            'guardarAutoridad',
-            'actualizarAutoridad',
-            'eliminarAutoridad',
-            'guardarSede',
-            'actualizarSede',
-            'eliminarSede'
-        ];
-
-        if (
-            resultado &&
-            resultado.exito === true &&
-            payload &&
-            accionesQueModificanDatos.includes(payload.accion)
-        ) {
-            limpiarCacheDirectorio();
-            console.log('DIAGNÓSTICO - Caché limpiada después de guardar cambios.');
-        }
-
-        return resultado;
-
-    } catch (err) {
-        if (err instanceof SyntaxError) {
-            console.error("Respuesta no válida del servidor:", text);
-            throw new Error("El servidor devolvió un error en lugar de JSON.");
-        }
-
-        throw err;
-    }
-}
 
         function limpiarFiltros() {
             document.getElementById('filterText').value = '';
@@ -1927,6 +1706,38 @@ console.log(
                 containerSub.classList.add('hidden'); 
             }
             render(); 
+        }
+
+        function handleAutoridadOrganoChange() {
+            const organo = document.getElementById('formAutOrgano').value;
+            const containerMun = document.getElementById('containerAutMunicipio');
+            const selectMun = document.getElementById('formAutMunicipioSelect');
+            const selectAmbito = document.getElementById('formAutAmbito');
+
+            selectMun.innerHTML = '<option value="">Selecciona el municipio...</option>';
+            containerMun.classList.add('hidden');
+            selectMun.value = '';
+
+            if (organo === 'Consejo Municipal Electoral') {
+                containerMun.classList.remove('hidden');
+                selectAmbito.value = 'Municipal';
+                MUNICIPIOS.forEach(m => {
+                    selectMun.innerHTML += `<option value="${m}">${m}</option>`;
+                });
+            }
+        }
+
+        function handleAutoridadPuestoChange() {
+            const puesto = document.getElementById('formAutPuesto').value;
+            const containerFormula = document.getElementById('containerAutFormula');
+            const selectFormula = document.getElementById('formAutFormulaSelect');
+
+            if (puesto === 'Consejera/o Electoral') {
+                containerFormula.classList.remove('hidden');
+            } else {
+                containerFormula.classList.add('hidden');
+                selectFormula.value = '';
+            }
         }
 
         function handleCargoChange() {
@@ -2038,30 +1849,24 @@ console.log(
                 const etapaSegura = escaparHTML(asp.etapa);
                 const cargoSeguro = escaparHTML(asp.cargo);
                 const telefonoSeguro = escaparHTML(asp.telefono);
-                const inicialSegura = escaparHTML(
-                    String(asp.nombre || '?').charAt(0).toUpperCase()
-                );
+                const inicialSegura = escaparHTML(String(asp.nombre || '?').charAt(0).toUpperCase());
+                
                 let avatarHtml = `<div class="h-14 w-14 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-xl flex-shrink-0">${inicialSegura}</div>`;
                 if (asp.foto && String(asp.foto).trim() !== '') {
-                let fotoSegura = null;
-
-                try {
-                    const urlFoto = new URL(String(asp.foto).trim());
-
-                    if (['https:', 'http:'].includes(urlFoto.protocol) &&
-                        urlFoto.hostname &&
-                        !urlFoto.username &&
-                        !urlFoto.password) {
-                        fotoSegura = escaparHTML(urlFoto.href);
+                    let fotoSegura = null;
+                    try {
+                        const urlFoto = new URL(String(asp.foto).trim());
+                        if (['https:', 'http:'].includes(urlFoto.protocol) && urlFoto.hostname && !urlFoto.username && !urlFoto.password) {
+                            fotoSegura = escaparHTML(urlFoto.href);
+                        }
+                    } catch (error) {
+                        fotoSegura = null;
                     }
-                } catch (error) {
-                    fotoSegura = null;
-                }
 
-                if (fotoSegura) {
-                    avatarHtml = `<img src="${fotoSegura}" class="h-14 w-14 rounded-xl object-cover bg-gray-100 border border-gray-200 flex-shrink-0" alt="Fotografía del aspirante">`;
+                    if (fotoSegura) {
+                        avatarHtml = `<img src="${fotoSegura}" class="h-14 w-14 rounded-xl object-cover bg-gray-100 border border-gray-200 flex-shrink-0" alt="Fotografía del aspirante">`;
+                    }
                 }
-            }
 
                 htmlContent += `
                 <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition duration-200 border border-gray-200 overflow-hidden cursor-pointer break-inside-avoid" data-aspirante-id="${escaparHTML(asp.id)}">
@@ -2090,22 +1895,14 @@ console.log(
             
             grid.innerHTML = htmlContent;
             grid.onclick = function(event) {
-    const elemento = event.target;
-
-    if (!(elemento instanceof Element)) {
-        return;
-    }
-
-    const tarjeta = elemento.closest('[data-aspirante-id]');
-
-    if (tarjeta && grid.contains(tarjeta)) {
-        const idAspirante = tarjeta.dataset.aspiranteId;
-
-        if (idAspirante) {
-            viewProfile(idAspirante);
-        }
-    }
-};
+                const elemento = event.target;
+                if (!(elemento instanceof Element)) return;
+                const tarjeta = elemento.closest('[data-aspirante-id]');
+                if (tarjeta && grid.contains(tarjeta)) {
+                    const idAspirante = tarjeta.dataset.aspiranteId;
+                    if (idAspirante) viewProfile(idAspirante);
+                }
+            };
         }
 
         function renderDetail() {
@@ -2116,16 +1913,9 @@ console.log(
 
             if (asp.foto && String(asp.foto).trim() !== '') {
                 let fotoAspiranteSegura = null;
-
                 try {
                     const urlFoto = new URL(String(asp.foto).trim());
-
-                    if (
-                        ['https:', 'http:'].includes(urlFoto.protocol) &&
-                        urlFoto.hostname &&
-                        !urlFoto.username &&
-                        !urlFoto.password
-                    ) {
+                    if (['https:', 'http:'].includes(urlFoto.protocol) && urlFoto.hostname && !urlFoto.username && !urlFoto.password) {
                         fotoAspiranteSegura = escaparHTML(urlFoto.href);
                     }
                 } catch (error) {
@@ -2143,11 +1933,11 @@ console.log(
             document.getElementById('detailEtapa').innerText = asp.etapa; 
             document.getElementById('detailPartido').innerText = asp.partido || 'Sin partido'; 
             document.getElementById('detailBio').innerText = asp.bio || 'Sin biografía.'; 
+            
             const telefonoDetalle = document.getElementById('detailTelefono');
-                telefonoDetalle.innerHTML = '<i class="fas fa-phone mr-2 text-gray-400"></i> ';
-                telefonoDetalle.appendChild(
-                document.createTextNode(asp.telefono || 'No registrado')
-                );
+            telefonoDetalle.innerHTML = '<i class="fas fa-phone mr-2 text-gray-400"></i> ';
+            telefonoDetalle.appendChild(document.createTextNode(asp.telefono || 'No registrado'));
+            
             document.getElementById('detailObservaciones').innerText = asp.observaciones || 'Ninguna.';
             
             const modificadoPorEl = document.getElementById('detailModificadoPor');
@@ -2156,52 +1946,42 @@ console.log(
             }
 
             const divRedes = document.getElementById('detailRedes');
-divRedes.replaceChildren();
+            divRedes.replaceChildren();
+            const redSocial = String(asp.redesSociales || '').trim();
 
-const redSocial = String(asp.redesSociales || '').trim();
+            if (redSocial) {
+                let urlSegura = null;
+                try {
+                    const url = new URL(/^https?:\/\//i.test(redSocial) ? redSocial : 'https://' + redSocial);
+                    if (['http:', 'https:'].includes(url.protocol) && url.hostname && !url.username && !url.password) {
+                        urlSegura = url.href;
+                    }
+                } catch (error) {
+                    urlSegura = null;
+                }
 
-if (redSocial) {
-    let urlSegura = null;
+                if (urlSegura) {
+                    const enlace = document.createElement('a');
+                    enlace.href = urlSegura;
+                    enlace.target = '_blank';
+                    enlace.rel = 'noopener noreferrer';
+                    enlace.className = 'text-blue-600 hover:underline';
 
-    try {
-        const url = new URL(
-            /^https?:\/\//i.test(redSocial)
-                ? redSocial
-                : 'https://' + redSocial
-        );
+                    const icono = document.createElement('i');
+                    icono.className = 'fas fa-link mr-2 text-gray-400';
 
-        if (['http:', 'https:'].includes(url.protocol) &&
-            url.hostname &&
-            !url.username &&
-            !url.password) {
-            urlSegura = url.href;
-        }
-    } catch (error) {
-        urlSegura = null;
-    }
-
-    if (urlSegura) {
-        const enlace = document.createElement('a');
-        enlace.href = urlSegura;
-        enlace.target = '_blank';
-        enlace.rel = 'noopener noreferrer';
-        enlace.className = 'text-blue-600 hover:underline';
-
-        const icono = document.createElement('i');
-        icono.className = 'fas fa-link mr-2 text-gray-400';
-
-        enlace.appendChild(icono);
-        enlace.appendChild(document.createTextNode(' ' + redSocial));
-        divRedes.appendChild(enlace);
-    } else {
-        divRedes.textContent = redSocial;
-    }
-} else {
-    const aviso = document.createElement('span');
-    aviso.className = 'text-gray-400 italic';
-    aviso.textContent = 'No registradas';
-    divRedes.appendChild(aviso);
-}
+                    enlace.appendChild(icono);
+                    enlace.appendChild(document.createTextNode(' ' + redSocial));
+                    divRedes.appendChild(enlace);
+                } else {
+                    divRedes.textContent = redSocial;
+                }
+            } else {
+                const aviso = document.createElement('span');
+                aviso.className = 'text-gray-400 italic';
+                aviso.textContent = 'No registradas';
+                divRedes.appendChild(aviso);
+            }
 
             const mapDiv = document.getElementById('mapContainer');
             if (appState.mapInstance) {
@@ -2211,22 +1991,16 @@ if (redSocial) {
 
             const tl = document.getElementById('timelineContainer'); 
             tl.innerHTML = '';
-
             tl.onclick = function(event) {
-            if (!(event.target instanceof Element)) return;
+                if (!(event.target instanceof Element)) return;
+                const botonEditar = event.target.closest('[data-edit-activity-id]');
+                if (!botonEditar || !tl.contains(botonEditar)) return;
+                if (appState.isReadOnly) return;
+                const idActividad = botonEditar.dataset.editActivityId;
+                if (!idActividad) return;
+                openEditActivityModal(idActividad);
+            };
 
-            const botonEditar = event.target.closest('[data-edit-activity-id]');
-
-            if (!botonEditar || !tl.contains(botonEditar)) return;
-
-            if (appState.isReadOnly) return;
-
-            const idActividad = botonEditar.dataset.editActivityId;
-
-            if (!idActividad) return;
-
-            openEditActivityModal(idActividad);
-        };
             let heatPoints = [];
             let markers = [];
 
@@ -2302,7 +2076,6 @@ if (redSocial) {
                 mapDiv.className = "w-full h-[400px] rounded-md border border-gray-300 z-10 relative";
                 
                 appState.mapInstance = L.map('mapContainer').setView([heatPoints[0][0], heatPoints[0][1]], 12);
-                
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(appState.mapInstance);
@@ -2316,7 +2089,6 @@ if (redSocial) {
 
                 markers.forEach(m => {
                     const estilo = obtenerEstiloCalor(m.asistentes);
-
                     L.circle([m.lat, m.lng], {
                         radius: estilo.radio * 1.5,
                         color: estilo.color,
@@ -2358,19 +2130,14 @@ if (redSocial) {
             media.innerHTML = '';
             media.onclick = function(event) {
                 if (!(event.target instanceof Element)) return;
-
                 const botonEditar = event.target.closest('[data-edit-publication-id]');
-
                 if (!botonEditar || !media.contains(botonEditar)) return;
-
                 if (appState.isReadOnly) return;
-
                 const idPublicacion = botonEditar.dataset.editPublicationId;
-
                 if (!idPublicacion) return;
-
                 openEditPublicationModal(idPublicacion);
             };
+
             if (!asp.publicaciones || asp.publicaciones.length === 0) {
                 media.innerHTML = '<p class="text-sm text-gray-500 italic">No hay publicaciones registradas.</p>';
             } else {
@@ -2396,19 +2163,8 @@ if (redSocial) {
                     if (pub.url && String(pub.url).trim() !== '') {
                         try {
                             const textoUrl = String(pub.url).trim();
-
-                            const url = new URL(
-                                /^https?:\/\//i.test(textoUrl)
-                                    ? textoUrl
-                                    : 'https://' + textoUrl
-                            );
-
-                            if (
-                                ['http:', 'https:'].includes(url.protocol) &&
-                                url.hostname &&
-                                !url.username &&
-                                !url.password
-                            ) {
+                            const url = new URL(/^https?:\/\//i.test(textoUrl) ? textoUrl : 'https://' + textoUrl);
+                            if (['http:', 'https:'].includes(url.protocol) && url.hostname && !url.username && !url.password) {
                                 urlPublicacionSegura = escaparHTML(url.href);
                             }
                         } catch (error) {
@@ -2446,51 +2202,73 @@ if (redSocial) {
         }
 
         function populateAutoridadesDynamicFilters() {
-            const selectOrgano = document.getElementById('filterAutOrgano');
-            const selectSede = document.getElementById('filterAutSede');
-            const formSelectSede = document.getElementById('formAutIdSede');
+    const selectOrgano = document.getElementById('filterAutOrgano');
+    const selectSede = document.getElementById('filterAutSede');
+    const selectCargo = document.getElementById('filterAutCargo'); // Nuevo
+    const formSelectSede = document.getElementById('formAutIdSede');
 
-            if (selectOrgano) {
-                const organosSet = new Set();
-                appState.autoridades.forEach(a => {
-                    if (a.organoColegiado && a.organoColegiado.trim() !== '') {
-                        organosSet.add(a.organoColegiado.trim());
-                    }
-                });
-                selectOrgano.innerHTML = '<option value="Todos">Todos los órganos</option>';
-                Array.from(organosSet).sort().forEach(org => {
-                    selectOrgano.innerHTML += `<option value="${org}">${org}</option>`;
-                });
+    if (selectOrgano) {
+        const organosSet = new Set();
+        appState.autoridades.forEach(a => {
+            if (a.organoColegiado && a.organoColegiado.trim() !== '') {
+                organosSet.add(a.organoColegiado.trim());
             }
+        });
+        selectOrgano.innerHTML = '<option value="Todos">Todos los órganos</option>';
+        Array.from(organosSet).sort().forEach(org => {
+            selectOrgano.innerHTML += `<option value="${org}">${org}</option>`;
+        });
+    }
 
-            if (selectSede) {
-                selectSede.innerHTML = '<option value="Todas">Todas las sedes</option>';
-                appState.sedes.forEach(s => {
-                    selectSede.innerHTML += `<option value="${s.idSede}">[${s.institucion}] ${s.nombreSede}</option>`;
-                });
+    if (selectSede) {
+        selectSede.innerHTML = '<option value="Todas">Todas las sedes</option>';
+        appState.sedes.forEach(s => {
+            selectSede.innerHTML += `<option value="${s.idSede}">[${s.institucion}] ${s.nombreSede}</option>`;
+        });
+    }
+
+    // Lógica para llenar el nuevo selector de cargos (corregido)
+    if (selectCargo) {
+        const cargosSet = new Set();
+        appState.autoridades.forEach(a => {
+            if (a.puestoCargo && a.puestoCargo.trim() !== '') {
+                let puestoBase = a.puestoCargo.trim();
+                if (puestoBase.includes(' - Fórmula ')) {
+                    puestoBase = puestoBase.split(' - Fórmula ')[0];
+                } else if (puestoBase.includes(' (Fórmula ')) {
+                    puestoBase = puestoBase.split(' (Fórmula ')[0]; // Corregido el split
+                }
+                cargosSet.add(puestoBase);
             }
+        });
+        selectCargo.innerHTML = '<option value="Todos">Todos los cargos</option>';
+        Array.from(cargosSet).sort().forEach(cargo => {
+            selectCargo.innerHTML += `<option value="${cargo}">${cargo}</option>`;
+        });
+    }
 
-            if (formSelectSede) {
-                formSelectSede.innerHTML = '<option value="">Sin sede asignada...</option>';
-                appState.sedes.forEach(s => {
-                    formSelectSede.innerHTML += `<option value="${s.idSede}">[${s.institucion}] ${s.nombreSede} (${s.cabeceraMunicipio})</option>`;
-                });
-            }
+    if (formSelectSede) {
+        formSelectSede.innerHTML = '<option value="">Sin sede asignada...</option>';
+        appState.sedes.forEach(s => {
+            formSelectSede.innerHTML += `<option value="${s.idSede}">[${s.institucion}] ${s.nombreSede} (${s.cabeceraMunicipio})</option>`;
+        });
+    }
 
-            const countSedesEl = document.getElementById('countSedesBadge');
-            if (countSedesEl) countSedesEl.innerText = appState.sedes.length;
-        }
+    const countSedesEl = document.getElementById('countSedesBadge');
+    if (countSedesEl) countSedesEl.innerText = appState.sedes.length;
+}
 
         function limpiarFiltrosAutoridades() {
-            document.getElementById('filterAutText').value = '';
-            document.getElementById('filterAutInstitucion').value = 'Todas';
-            document.getElementById('filterAutOrgano').value = 'Todos';
-            document.getElementById('filterAutSede').value = 'Todas';
-            document.getElementById('filterAutParticipacion').value = 'Todas';
-            document.getElementById('filterAutCondicion').value = 'Todas';
-            document.getElementById('filterAutEstatus').value = 'Todos';
-            renderAutoridades();
-        }
+    document.getElementById('filterAutText').value = '';
+    document.getElementById('filterAutInstitucion').value = 'Todas';
+    document.getElementById('filterAutOrgano').value = 'Todos';
+    document.getElementById('filterAutSede').value = 'Todas';
+    document.getElementById('filterAutCargo').value = 'Todos'; // <-- NUEVO
+    document.getElementById('filterAutParticipacion').value = 'Todas';
+    document.getElementById('filterAutCondicion').value = 'Todas';
+    document.getElementById('filterAutEstatus').value = 'Todos';
+    renderAutoridades();
+}
 
         function obtenerSedePorId(idSede) {
             if (!idSede) return null;
@@ -2498,154 +2276,138 @@ if (redSocial) {
         }
 
         function renderAutoridades() {
-            const grid = document.getElementById('autoridadesGrid');
-            if (!grid) return;
+    const grid = document.getElementById('autoridadesGrid');
+    if (!grid) return;
 
-            const q = (document.getElementById('filterAutText')?.value || '').toLowerCase();
-            const inst = document.getElementById('filterAutInstitucion')?.value || 'Todas';
-            const org = document.getElementById('filterAutOrgano')?.value || 'Todos';
-            const sede = document.getElementById('filterAutSede')?.value || 'Todas';
-            const part = document.getElementById('filterAutParticipacion')?.value || 'Todas';
-            const cond = document.getElementById('filterAutCondicion')?.value || 'Todas';
-            const est = document.getElementById('filterAutEstatus')?.value || 'Todos';
+    const q = (document.getElementById('filterAutText')?.value || '').toLowerCase();
+    const inst = document.getElementById('filterAutInstitucion')?.value || 'Todas';
+    const org = document.getElementById('filterAutOrgano')?.value || 'Todos';
+    const sede = document.getElementById('filterAutSede')?.value || 'Todas';
+    const cargoFiltro = document.getElementById('filterAutCargo')?.value || 'Todos'; // <-- NUEVO: Captura el valor del select de cargo
+    const part = document.getElementById('filterAutParticipacion')?.value || 'Todas';
+    const cond = document.getElementById('filterAutCondicion')?.value || 'Todas';
+    const est = document.getElementById('filterAutEstatus')?.value || 'Todos';
 
-            let filtradas = appState.autoridades.filter(a => {
-                const targetText = `${a.nombreCompleto || ''} ${a.puestoCargo || ''} ${a.organoColegiado || ''} ${a.ambitoDistrito || ''} ${a.correoElectronico || ''} ${a.partidoOrganizacion || ''}`.toLowerCase();
-                const matchText = targetText.includes(q);
-                const matchInst = inst === 'Todas' || a.institucion === inst;
-                const matchOrg = org === 'Todos' || a.organoColegiado === org;
-                const matchSede = sede === 'Todas' || a.idSede === sede;
-                const matchPart = part === 'Todas' || a.calidadParticipacion === part;
-                const matchCond = cond === 'Todas' || a.condicion === cond;
-                const matchEst = est === 'Todos' || (a.estatus || 'Activo') === est;
+    let filtradas = appState.autoridades.filter(a => {
+        const targetText = `${a.nombreCompleto || ''} ${a.puestoCargo || ''} ${a.organoColegiado || ''} ${a.ambitoDistrito || ''} ${a.correoElectronico || ''} ${a.partidoOrganizacion || ''}`.toLowerCase();
+        const matchText = targetText.includes(q);
+        const matchInst = inst === 'Todas' || a.institucion === inst;
+        const matchOrg = org === 'Todos' || a.organoColegiado === org;
+        const matchSede = sede === 'Todas' || a.idSede === sede;
+        
+        // <-- NUEVO: Valida que coincida con el cargo seleccionado (incluso si tiene fórmula)
+        let matchCargo = true;
+        if (cargoFiltro !== 'Todos') {
+            const puestoA = a.puestoCargo || '';
+            matchCargo = puestoA === cargoFiltro || puestoA.startsWith(cargoFiltro + ' -') || puestoA.startsWith(cargoFiltro + ' (');
+        }
 
-                return matchText && matchInst && matchOrg && matchSede && matchPart && matchCond && matchEst;
-            });
+        const matchPart = part === 'Todas' || a.calidadParticipacion === part;
+        const matchCond = cond === 'Todas' || a.condicion === cond;
+        const matchEst = est === 'Todos' || (a.estatus || 'Activo') === est;
 
-            filtradas = ordenarAutoridades(filtradas);
+        // <-- Actualizado para incluir matchCargo en la evaluación
+        return matchText && matchInst && matchOrg && matchSede && matchCargo && matchPart && matchCond && matchEst;
+    });
 
-            const countEl = document.getElementById('totalAutoridadesCount');
-            if (countEl) {
-                countEl.innerText = filtradas.length === appState.autoridades.length
-                    ? `${appState.autoridades.length} registrados`
-                    : `Mostrando ${filtradas.length} de ${appState.autoridades.length}`;
-            }
+    filtradas = ordenarAutoridades(filtradas);
 
-            if (filtradas.length === 0) {
-                grid.innerHTML = `
-                <div class="col-span-full py-12 text-center bg-white rounded-lg border border-gray-200">
-                    <i class="fas fa-landmark text-gray-300 text-5xl mb-4 block"></i>
-                    <p class="text-gray-500 font-medium text-lg">No se encontraron autoridades con los filtros seleccionados.</p>
-                </div>`;
-                return;
-            }
+    const countEl = document.getElementById('totalAutoridadesCount');
+    if (countEl) {
+        countEl.innerText = filtradas.length === appState.autoridades.length
+            ? `${appState.autoridades.length} registrados`
+            : `Mostrando ${filtradas.length} de ${appState.autoridades.length}`;
+    }
 
-            let html = '';
-            filtradas.forEach(aut => {
-                const nombreAutSeguro = escaparHTML(aut.nombreCompleto);
-                const institucionAutSegura = escaparHTML(aut.institucion || 'N/A');
-                const calidadAutSegura = escaparHTML(aut.calidadParticipacion);
-                const condicionAutSegura = escaparHTML(aut.condicion);
-                const puestoAutSeguro = escaparHTML(aut.puestoCargo);
-                const organoAutSeguro = escaparHTML(aut.organoColegiado || 'N/A');
-                const ambitoAutSeguro = escaparHTML(aut.ambitoDistrito);
-                const partidoAutSeguro = escaparHTML(aut.partidoOrganizacion);
-                const telefonoAutSeguro = escaparHTML(
-                    aut.telefonoDirecto
-                        ? `${aut.telefonoDirecto}${aut.extension ? ' ext. ' + aut.extension : ''}`
-                        : ''
-                );
-                const correoAutSeguro = escaparHTML(aut.correoElectronico);
-                const inicialAutSegura = escaparHTML(
-                    String(aut.nombreCompleto || '?').charAt(0).toUpperCase()
-                );
-                const isINE = (aut.institucion || '').toUpperCase() === 'INE';
-                const instBadgeClass = isINE
-                    ? 'bg-pink-100 text-pink-800 border border-pink-200'
-                    : 'bg-amber-100 text-amber-800 border border-amber-200';
-
-                let avatarHtml = `<div class="h-14 w-14 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-xl flex-shrink-0">${inicialAutSegura}</div>`;
-
-                if (aut.foto && String(aut.foto).trim() !== '') {
-                    let fotoAutSegura = null;
-
-                    try {
-                        const urlFoto = new URL(String(aut.foto).trim());
-
-                        if (
-                            ['https:', 'http:'].includes(urlFoto.protocol) &&
-                            urlFoto.hostname &&
-                            !urlFoto.username &&
-                            !urlFoto.password
-                        ) {
-                            fotoAutSegura = escaparHTML(urlFoto.href);
-                        }
-                    } catch (error) {
-                        fotoAutSegura = null;
-                    }
-
-                    if (fotoAutSegura) {
-                        avatarHtml = `<img src="${fotoAutSegura}" class="h-14 w-14 rounded-xl object-cover bg-gray-100 border border-gray-200 flex-shrink-0" alt="Fotografía de autoridad electoral">`;
-                    }
-                }
-
-                const sedeObj = obtenerSedePorId(aut.idSede);
-                const sedeNombre = sedeObj ? sedeObj.nombreSede : (aut.idSede || 'Sin sede especificada');
-
-                const telCompleto = aut.telefonoDirecto
-                    ? `${aut.telefonoDirecto}${aut.extension ? ' ext. ' + aut.extension : ''}`
-                    : '';
-
-                html += `
-                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition duration-200 border border-gray-200 overflow-hidden cursor-pointer flex flex-col justify-between break-inside-avoid" data-autoridad-id="${escaparHTML(aut.id)}">
-                    <div class="p-5">
-                        <div class="flex items-start space-x-4 mb-3">
-                            ${avatarHtml}
-                            <div class="flex-1 min-w-0">
-                                <div class="flex flex-wrap items-center gap-1 mb-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold uppercase ${instBadgeClass}">${institucionAutSegura}</span>
-                                    ${aut.calidadParticipacion ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-100">${calidadAutSegura}</span>` : ''}
-                                    ${aut.condicion ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-700">${condicionAutSegura}</span>` : ''}
-                                </div>
-                                <h3 class="text-base font-bold text-gray-900 leading-snug">${nombreAutSeguro}</h3>
-                                <p class="text-xs font-semibold text-purple-700 mt-0.5">${puestoAutSeguro}</p>
-                            </div>
-                        </div>
-
-                        <div class="text-xs text-gray-600 space-y-1.5 mt-3 pt-3 border-t border-gray-100">
-                            <p><i class="fas fa-sitemap w-4 text-gray-400 mr-1"></i> <b class="text-gray-700">Órgano:</b> ${organoAutSeguro} ${aut.ambitoDistrito ? `(${ambitoAutSeguro})` : ''}</p>
-                            ${aut.partidoOrganizacion && aut.partidoOrganizacion !== 'No aplica' ? `<p><i class="fas fa-flag w-4 text-gray-400 mr-1"></i> <b class="text-gray-700">Partido:</b> ${partidoAutSeguro}</p>` : ''}
-                            ${telCompleto ? `<p><i class="fas fa-phone w-4 text-gray-400 mr-1"></i> ${telefonoAutSeguro}</p>` : ''}
-                            ${aut.correoElectronico ? `<p class="truncate"><i class="fas fa-envelope w-4 text-gray-400 mr-1"></i> ${correoAutSeguro}</p>` : ''}
-                        </div>
-                    </div>
-
-                    <div class="bg-gray-50 px-5 py-2.5 border-t border-gray-100 flex justify-between items-center text-[11px] text-gray-500">
-                        <span class="truncate"><i class="fas fa-building mr-1 text-purple-500"></i> ${escaparHTML(sedeNombre)}</span>
-                        <span class="font-semibold text-purple-700 ml-2 whitespace-nowrap">Ver ficha <i class="fas fa-chevron-right ml-0.5 text-[10px]"></i></span>
-                    </div>
-                </div>`;
-            });
-
-            grid.innerHTML = html;
-            grid.onclick = function(event) {
-    const elemento = event.target;
-
-    if (!(elemento instanceof Element)) {
+    if (filtradas.length === 0) {
+        grid.innerHTML = `
+        <div class="col-span-full py-12 text-center bg-white rounded-lg border border-gray-200">
+            <i class="fas fa-landmark text-gray-300 text-5xl mb-4 block"></i>
+            <p class="text-gray-500 font-medium text-lg">No se encontraron autoridades con los filtros seleccionados.</p>
+        </div>`;
         return;
     }
 
-    const tarjeta = elemento.closest('[data-autoridad-id]');
+    let html = '';
+    filtradas.forEach(aut => {
+        const nombreAutSeguro = escaparHTML(aut.nombreCompleto);
+        const institucionAutSegura = escaparHTML(aut.institucion || 'N/A');
+        const calidadAutSegura = escaparHTML(aut.calidadParticipacion);
+        const condicionAutSegura = escaparHTML(aut.condicion);
+        const puestoAutSeguro = escaparHTML(aut.puestoCargo);
+        const organoAutSeguro = escaparHTML(aut.organoColegiado || 'N/A');
+        const ambitoAutSeguro = escaparHTML(aut.ambitoDistrito);
+        const partidoAutSeguro = escaparHTML(aut.partidoOrganizacion);
+        const telefonoAutSeguro = escaparHTML(aut.telefonoDirecto ? `${aut.telefonoDirecto}${aut.extension ? ' ext. ' + aut.extension : ''}` : '');
+        const correoAutSeguro = escaparHTML(aut.correoElectronico);
+        const inicialAutSegura = escaparHTML(String(aut.nombreCompleto || '?').charAt(0).toUpperCase());
+        const isINE = (aut.institucion || '').toUpperCase() === 'INE';
+        const instBadgeClass = isINE ? 'bg-pink-100 text-pink-800 border border-pink-200' : 'bg-amber-100 text-amber-800 border border-amber-200';
 
-    if (tarjeta && grid.contains(tarjeta)) {
-        const idAutoridad = tarjeta.dataset.autoridadId;
+        let avatarHtml = `<div class="h-14 w-14 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-xl flex-shrink-0">${inicialAutSegura}</div>`;
 
-        if (idAutoridad) {
-            viewAutoridadDetail(idAutoridad);
+        if (aut.foto && String(aut.foto).trim() !== '') {
+            let fotoAutSegura = null;
+            try {
+                const urlFoto = new URL(String(aut.foto).trim());
+                if (['https:', 'http:'].includes(urlFoto.protocol) && urlFoto.hostname && !urlFoto.username && !urlFoto.password) {
+                    fotoAutSegura = escaparHTML(urlFoto.href);
+                }
+            } catch (error) {
+                fotoAutSegura = null;
+            }
+
+            if (fotoAutSegura) {
+                avatarHtml = `<img src="${fotoAutSegura}" class="h-14 w-14 rounded-xl object-cover bg-gray-100 border border-gray-200 flex-shrink-0" alt="Fotografía de autoridad electoral">`;
+            }
         }
-    }
-};
+
+        const sedeObj = obtenerSedePorId(aut.idSede);
+        const sedeNombre = sedeObj ? sedeObj.nombreSede : (aut.idSede || 'Sin sede especificada');
+        const telCompleto = aut.telefonoDirecto ? `${aut.telefonoDirecto}${aut.extension ? ' ext. ' + aut.extension : ''}` : '';
+
+        html += `
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition duration-200 border border-gray-200 overflow-hidden cursor-pointer flex flex-col justify-between break-inside-avoid" data-autoridad-id="${escaparHTML(aut.id)}">
+            <div class="p-5">
+                <div class="flex items-start space-x-4 mb-3">
+                    ${avatarHtml}
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap items-center gap-1 mb-1">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold uppercase ${instBadgeClass}">${institucionAutSegura}</span>
+                            ${aut.calidadParticipacion ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-100">${calidadAutSegura}</span>` : ''}
+                            ${aut.condicion ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-700">${condicionAutSegura}</span>` : ''}
+                        </div>
+                        <h3 class="text-base font-bold text-gray-900 leading-snug">${nombreAutSeguro}</h3>
+                        <p class="text-xs font-semibold text-purple-700 mt-0.5">${puestoAutSeguro}</p>
+                    </div>
+                </div>
+
+                <div class="text-xs text-gray-600 space-y-1.5 mt-3 pt-3 border-t border-gray-100">
+                    <p><i class="fas fa-sitemap w-4 text-gray-400 mr-1"></i> <b class="text-gray-700">Órgano:</b> ${organoAutSeguro} ${aut.ambitoDistrito ? `(${ambitoAutSeguro})` : ''}</p>
+                    ${aut.partidoOrganizacion && aut.partidoOrganizacion !== 'No aplica' ? `<p><i class="fas fa-flag w-4 text-gray-400 mr-1"></i> <b class="text-gray-700">Partido:</b> ${partidoAutSeguro}</p>` : ''}
+                    ${telCompleto ? `<p><i class="fas fa-phone w-4 text-gray-400 mr-1"></i> ${telefonoAutSeguro}</p>` : ''}
+                    ${aut.correoElectronico ? `<p class="truncate"><i class="fas fa-envelope w-4 text-gray-400 mr-1"></i> ${correoAutSeguro}</p>` : ''}
+                </div>
+            </div>
+
+            <div class="bg-gray-50 px-5 py-2.5 border-t border-gray-100 flex justify-between items-center text-[11px] text-gray-500">
+                <span class="truncate"><i class="fas fa-building mr-1 text-purple-500"></i> ${escaparHTML(sedeNombre)}</span>
+                <span class="font-semibold text-purple-700 ml-2 whitespace-nowrap">Ver ficha <i class="fas fa-chevron-right ml-0.5 text-[10px]"></i></span>
+            </div>
+        </div>`;
+    });
+
+    grid.innerHTML = html;
+    grid.onclick = function(event) {
+        const elemento = event.target;
+        if (!(elemento instanceof Element)) return;
+        const tarjeta = elemento.closest('[data-autoridad-id]');
+        if (tarjeta && grid.contains(tarjeta)) {
+            const idAutoridad = tarjeta.dataset.autoridadId;
+            if (idAutoridad) viewAutoridadDetail(idAutoridad);
         }
+    };
+}
 
         function backToAutoridadesDashboard() {
             appState.selectedAutoridadId = null;
@@ -2675,16 +2437,9 @@ if (redSocial) {
 
             if (aut.foto && String(aut.foto).trim() !== '') {
                 let fotoDetalleSegura = null;
-
                 try {
                     const urlFoto = new URL(String(aut.foto).trim());
-
-                    if (
-                        ['https:', 'http:'].includes(urlFoto.protocol) &&
-                        urlFoto.hostname &&
-                        !urlFoto.username &&
-                        !urlFoto.password
-                    ) {
+                    if (['https:', 'http:'].includes(urlFoto.protocol) && urlFoto.hostname && !urlFoto.username && !urlFoto.password) {
                         fotoDetalleSegura = escaparHTML(urlFoto.href);
                     }
                 } catch (error) {
@@ -2700,16 +2455,12 @@ if (redSocial) {
             const isINE = (aut.institucion || '').toUpperCase() === 'INE';
             const instBadge = document.getElementById('autDetailInstitucionBadge');
             instBadge.innerText = aut.institucion || 'Autoridad';
-            instBadge.className = isINE
-                ? 'px-3 py-1 text-xs font-bold rounded-full bg-pink-100 text-pink-800 border border-pink-300'
-                : 'px-3 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-300';
+            instBadge.className = isINE ? 'px-3 py-1 text-xs font-bold rounded-full bg-pink-100 text-pink-800 border border-pink-300' : 'px-3 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-300';
 
             const estBadge = document.getElementById('autDetailEstatusBadge');
             const isActivo = (aut.estatus || 'Activo').toLowerCase() === 'activo';
             estBadge.innerText = aut.estatus || 'Activo';
-            estBadge.className = isActivo
-                ? 'px-2.5 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 border border-green-200'
-                : 'px-2.5 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200';
+            estBadge.className = isActivo ? 'px-2.5 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800 border border-green-200' : 'px-2.5 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200';
 
             document.getElementById('autDetailCalidadBadge').innerText = aut.calidadParticipacion || 'Participación N/A';
             document.getElementById('autDetailCondicionBadge').innerText = aut.condicion || 'Condición N/A';
@@ -2718,99 +2469,69 @@ if (redSocial) {
             document.getElementById('autDetailPuesto').innerText = aut.puestoCargo || '';
             document.getElementById('autDetailOrganoAmbito').innerText = `${aut.organoColegiado || ''} ${aut.ambitoDistrito ? ' • Ámbito: ' + aut.ambitoDistrito : ''}`;
 
-            const telText = aut.telefonoDirecto
-                ? `${aut.telefonoDirecto}${aut.extension ? ' (Ext. ' + aut.extension + ')' : ''}`
-                : 'No registrado';
+            const telText = aut.telefonoDirecto ? `${aut.telefonoDirecto}${aut.extension ? ' (Ext. ' + aut.extension + ')' : ''}` : 'No registrado';
             const telefonoAutoridad = document.getElementById('autDetailTelefono');
-
-telefonoAutoridad.innerHTML =
-    '<i class="fas fa-phone mr-1.5 text-gray-400"></i>';
-
-telefonoAutoridad.appendChild(
-    document.createTextNode(telText)
-);
+            telefonoAutoridad.innerHTML = '<i class="fas fa-phone mr-1.5 text-gray-400"></i>';
+            telefonoAutoridad.appendChild(document.createTextNode(telText));
 
             const correoDiv = document.getElementById('autDetailCorreo');
-correoDiv.replaceChildren();
+            correoDiv.replaceChildren();
+            const correoAutoridad = String(aut.correoElectronico || '').trim();
+            const correoValido = /^[^\s@<>:"'\\]+@[^\s@<>:"'\\]+\.[^\s@<>:"'\\]+$/.test(correoAutoridad);
 
-const correoAutoridad = String(aut.correoElectronico || '').trim();
-
-const correoValido =
-    /^[^\s@<>:"'\\]+@[^\s@<>:"'\\]+\.[^\s@<>:"'\\]+$/.test(correoAutoridad);
-
-if (correoValido) {
-    const enlaceCorreo = document.createElement('a');
-    enlaceCorreo.href = 'mailto:' + correoAutoridad;
-    enlaceCorreo.className =
-        'text-blue-600 hover:underline font-medium';
-
-    const iconoCorreo = document.createElement('i');
-    iconoCorreo.className =
-        'fas fa-envelope mr-1.5 text-gray-400';
-
-    enlaceCorreo.appendChild(iconoCorreo);
-    enlaceCorreo.appendChild(
-        document.createTextNode(correoAutoridad)
-    );
-
-    correoDiv.appendChild(enlaceCorreo);
-
-} else {
-    const avisoCorreo = document.createElement('span');
-    avisoCorreo.className = 'text-gray-400 italic';
-    avisoCorreo.textContent = correoAutoridad || 'No registrado';
-    correoDiv.appendChild(avisoCorreo);
-}
+            if (correoValido) {
+                const enlaceCorreo = document.createElement('a');
+                enlaceCorreo.href = 'mailto:' + correoAutoridad;
+                enlaceCorreo.className = 'text-blue-600 hover:underline font-medium';
+                const iconoCorreo = document.createElement('i');
+                iconoCorreo.className = 'fas fa-envelope mr-1.5 text-gray-400';
+                enlaceCorreo.appendChild(iconoCorreo);
+                enlaceCorreo.appendChild(document.createTextNode(correoAutoridad));
+                correoDiv.appendChild(enlaceCorreo);
+            } else {
+                const avisoCorreo = document.createElement('span');
+                avisoCorreo.className = 'text-gray-400 italic';
+                avisoCorreo.textContent = correoAutoridad || 'No registrado';
+                correoDiv.appendChild(avisoCorreo);
+            }
 
             document.getElementById('autDetailPartido').innerText = aut.partidoOrganizacion || 'No aplica';
 
             const redesDiv = document.getElementById('autDetailRedes');
-redesDiv.replaceChildren();
+            redesDiv.replaceChildren();
+            const redAutoridad = String(aut.redesSociales || '').trim();
 
-const redAutoridad = String(aut.redesSociales || '').trim();
+            if (redAutoridad) {
+                let urlSegura = null;
+                try {
+                    const url = new URL(/^https?:\/\//i.test(redAutoridad) ? redAutoridad : 'https://' + redAutoridad);
+                    if (['http:', 'https:'].includes(url.protocol) && url.hostname && !url.username && !url.password) {
+                        urlSegura = url.href;
+                    }
+                } catch (error) {
+                    urlSegura = null;
+                }
 
-if (redAutoridad) {
-    let urlSegura = null;
-
-    try {
-        const url = new URL(
-            /^https?:\/\//i.test(redAutoridad)
-                ? redAutoridad
-                : 'https://' + redAutoridad
-        );
-
-        if (['http:', 'https:'].includes(url.protocol) &&
-            url.hostname &&
-            !url.username &&
-            !url.password) {
-            urlSegura = url.href;
-        }
-    } catch (error) {
-        urlSegura = null;
-    }
-
-    if (urlSegura) {
-        const enlace = document.createElement('a');
-        enlace.href = urlSegura;
-        enlace.target = '_blank';
-        enlace.rel = 'noopener noreferrer';
-        enlace.className = 'text-blue-600 hover:underline';
-
-        const icono = document.createElement('i');
-        icono.className = 'fas fa-link mr-1.5 text-gray-400';
-
-        enlace.appendChild(icono);
-        enlace.appendChild(document.createTextNode(redAutoridad));
-        redesDiv.appendChild(enlace);
-    } else {
-        redesDiv.textContent = redAutoridad;
-    }
-} else {
-    const aviso = document.createElement('span');
-    aviso.className = 'text-gray-400 italic';
-    aviso.textContent = 'No registradas';
-    redesDiv.appendChild(aviso);
-}
+                if (urlSegura) {
+                    const enlace = document.createElement('a');
+                    enlace.href = urlSegura;
+                    enlace.target = '_blank';
+                    enlace.rel = 'noopener noreferrer';
+                    enlace.className = 'text-blue-600 hover:underline';
+                    const icono = document.createElement('i');
+                    icono.className = 'fas fa-link mr-1.5 text-gray-400';
+                    enlace.appendChild(icono);
+                    enlace.appendChild(document.createTextNode(redAutoridad));
+                    redesDiv.appendChild(enlace);
+                } else {
+                    redesDiv.textContent = redAutoridad;
+                }
+            } else {
+                const aviso = document.createElement('span');
+                aviso.className = 'text-gray-400 italic';
+                aviso.textContent = 'No registradas';
+                redesDiv.appendChild(aviso);
+            }
 
             document.getElementById('autDetailSintesis').innerText = aut.sintesisCurricular || 'Sin síntesis curricular capturada.';
             document.getElementById('autDetailModificadoPor').innerText = aut.modificadoPor || 'Sin registro';
@@ -2825,9 +2546,7 @@ if (redAutoridad) {
             }
 
             if (sedeObj) {
-                const googleMapsUrl = sedeObj.coordenadasGps
-                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sedeObj.coordenadasGps)}`
-                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sedeObj.direccionCompleta || sedeObj.nombreSede)}`;
+                const googleMapsUrl = sedeObj.coordenadasGps ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sedeObj.coordenadasGps)}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sedeObj.direccionCompleta || sedeObj.nombreSede)}`;
                 const sedeInstitucionSegura = escaparHTML(sedeObj.institucion);
                 const sedeIdSeguro = escaparHTML(sedeObj.idSede);
                 const sedeNombreSeguro = escaparHTML(sedeObj.nombreSede);
@@ -2866,12 +2585,7 @@ if (redAutoridad) {
                         attribution: '© OpenStreetMap contributors'
                     }).addTo(appState.autMapInstance);
 
-                    L.marker([lat, lng])
-                    .addTo(appState.autMapInstance)
-                    .bindPopup(
-                        `<b>${sedeNombreSeguro}</b><br><span class="text-xs">${escaparHTML(sedeObj.direccionCompleta || '')}</span>`
-                    )
-                    .openPopup();
+                    L.marker([lat, lng]).addTo(appState.autMapInstance).bindPopup(`<b>${sedeNombreSeguro}</b><br><span class="text-xs">${escaparHTML(sedeObj.direccionCompleta || '')}</span>`).openPopup();
 
                     setTimeout(() => {
                         if (appState.autMapInstance) appState.autMapInstance.invalidateSize();
@@ -2881,7 +2595,7 @@ if (redAutoridad) {
                     mapDiv.innerHTML = `<span class="text-gray-400 italic">La sede no cuenta con coordenadas GPS válidas.</span>`;
                 }
             } else {
-                sedeInfoDiv.innerHTML = `<p class="text-sm text-gray-500 italic">Esta autoridad no tiene una sede vinculada o el código de sede (${escaparHTML(aut.idSede || 'vacío')}) no existe en el catálogo.</p>`;
+                sedeInfoDiv.innerHTML = `<p class="text-sm text-gray-500 italic">Esta autoridad no tiene una sede vinculada.</p>`;
                 mapDiv.className = "w-full h-[200px] bg-gray-50 rounded-md border border-gray-200 flex items-center justify-center";
                 mapDiv.innerHTML = `<span class="text-gray-400 italic">Sin sede georreferenciada para mostrar.</span>`;
             }
@@ -2902,10 +2616,7 @@ if (redAutoridad) {
 
             appState.sedes.forEach(s => {
                 const isINE = (s.institucion || '').toUpperCase() === 'INE';
-                const badgeClass = isINE
-                    ? 'bg-pink-100 text-pink-800 border border-pink-200'
-                    : 'bg-amber-100 text-amber-800 border border-amber-200';
-
+                const badgeClass = isINE ? 'bg-pink-100 text-pink-800 border border-pink-200' : 'bg-amber-100 text-amber-800 border border-amber-200';
                 const numAdscritos = appState.autoridades.filter(a => a.idSede === s.idSede).length;
 
                 let editBtns = '';
@@ -2959,9 +2670,7 @@ if (redAutoridad) {
                 }).addTo(appState.sedesMapInstance);
 
                 validPoints.forEach(p => {
-                    L.marker([p.lat, p.lng])
-                        .addTo(appState.sedesMapInstance)
-                        .bindPopup(`<b>[${p.sede.institucion}] ${p.sede.nombreSede}</b><br><span class="text-xs">${p.sede.direccionCompleta || ''}</span><br><b>Tel:</b> ${p.sede.telefonoConmutador || 'N/A'}<br><b>Adscritos:</b> ${p.numAdscritos}`);
+                    L.marker([p.lat, p.lng]).addTo(appState.sedesMapInstance).bindPopup(`<b>[${p.sede.institucion}] ${p.sede.nombreSede}</b><br><span class="text-xs">${p.sede.direccionCompleta || ''}</span><br><b>Tel:</b> ${p.sede.telefonoConmutador || 'N/A'}<br><b>Adscritos:</b> ${p.numAdscritos}`);
                 });
 
                 if (validPoints.length > 1) {
@@ -3005,7 +2714,6 @@ if (redAutoridad) {
             }
         }
 
-        // Conserva valores históricos que no estén en la lista predefinida.
         function seleccionarOpcionAutoridad(idCampo, valor) {
             const campo = document.getElementById(idCampo);
             campo.querySelectorAll('option[data-valor-historico="true"]').forEach(op => op.remove());
@@ -3025,8 +2733,10 @@ if (redAutoridad) {
             document.getElementById('formAutNombre').value = "";
             document.getElementById('formAutInstitucion').value = "INE";
             seleccionarOpcionAutoridad('formAutOrgano', "");
-            document.getElementById('formAutAmbito').value = "Estatal";
+            document.getElementById('formAutAmbito').value = "Estatal / Oficinas Centrales";
+            handleAutoridadOrganoChange();
             seleccionarOpcionAutoridad('formAutPuesto', "");
+            handleAutoridadPuestoChange();
             document.getElementById('formAutCalidad').value = "Voz y Voto";
             document.getElementById('formAutCondicion').value = "Propietario";
             document.getElementById('formAutPartido').value = "No aplica";
@@ -3057,8 +2767,35 @@ if (redAutoridad) {
             document.getElementById('formAutNombre').value = aut.nombreCompleto || "";
             document.getElementById('formAutInstitucion').value = aut.institucion || "INE";
             seleccionarOpcionAutoridad('formAutOrgano', aut.organoColegiado);
-            document.getElementById('formAutAmbito').value = aut.ambitoDistrito || "";
-            seleccionarOpcionAutoridad('formAutPuesto', aut.puestoCargo);
+            handleAutoridadOrganoChange();
+
+            if (aut.organoColegiado === 'Consejo Municipal Electoral') {
+                document.getElementById('formAutMunicipioSelect').value = aut.ambitoDistrito || "";
+            } else {
+                document.getElementById('formAutAmbito').value = aut.ambitoDistrito || "Estatal / Oficinas Centrales";
+            }
+
+            let puestoBase = aut.puestoCargo || "";
+            let formulaSeleccionada = "";
+
+            if (puestoBase.includes(' - Fórmula ')) {
+                const partes = puestoBase.split(' - Fórmula ');
+                puestoBase = partes[0];
+                formulaSeleccionada = 'Fórmula ' + partes[1];
+            } else if (puestoBase.includes(' (Fórmula ')) {
+                const partes = puestoBase.split(' (Fórmula ');
+                puestoBase = partes[0];
+                formulaSeleccionada = 'Fórmula ' + partes[1].replace(')', '');
+            }
+
+            seleccionarOpcionAutoridad('formAutPuesto', puestoBase);
+            handleAutoridadPuestoChange();
+            if (puestoBase === 'Consejera/o Electoral' && formulaSeleccionada) {
+                document.getElementById('formAutFormulaSelect').value = formulaSeleccionada;
+            } else {
+                document.getElementById('formAutFormulaSelect').value = "";
+            }
+
             document.getElementById('formAutCalidad').value = aut.calidadParticipacion || "Voz y Voto";
             document.getElementById('formAutCondicion').value = aut.condicion || "Propietario";
             document.getElementById('formAutPartido').value = aut.partidoOrganizacion || "No aplica";
@@ -3087,13 +2824,31 @@ if (redAutoridad) {
 
         async function processAutoridadForm() {
             const id = document.getElementById('formAutId').value;
+            let ambitoFinal = document.getElementById('formAutAmbito').value;
+            const organoFinal = document.getElementById('formAutOrgano').value.trim();
+            let puestoFinal = document.getElementById('formAutPuesto').value.trim();
+            const formulaVal = document.getElementById('formAutFormulaSelect').value;
+
+            if (organoFinal === 'Consejo Municipal Electoral') {
+                const muniSeleccionado = document.getElementById('formAutMunicipioSelect').value;
+                if (!muniSeleccionado) {
+                    alert("Por favor selecciona el municipio correspondiente al Consejo Municipal Electoral.");
+                    return;
+                }
+                ambitoFinal = muniSeleccionado;
+            }
+
+            if (puestoFinal === 'Consejera/o Electoral' && formulaVal) {
+                puestoFinal += ' - ' + formulaVal;
+            }
+
             const payload = {
                 id: id || null,
                 nombreCompleto: document.getElementById('formAutNombre').value.trim(),
                 institucion: document.getElementById('formAutInstitucion').value,
-                organoColegiado: document.getElementById('formAutOrgano').value.trim(),
-                ambitoDistrito: document.getElementById('formAutAmbito').value.trim(),
-                puestoCargo: document.getElementById('formAutPuesto').value.trim(),
+                organoColegiado: organoFinal,
+                ambitoDistrito: ambitoFinal,
+                puestoCargo: puestoFinal,
                 calidadParticipacion: document.getElementById('formAutCalidad').value,
                 condicion: document.getElementById('formAutCondicion').value,
                 partidoOrganizacion: document.getElementById('formAutPartido').value,
@@ -3215,12 +2970,12 @@ if (redAutoridad) {
                 horarioAtencion: document.getElementById('formSedeHorario').value.trim()
             };
 
-                if (!payload.nombreSede) {
+            if (!payload.nombreSede) {
                 alert("El Nombre de la Sede es obligatorio.");
                 return;
-                }
+            }
 
-                if (isEdit && !payload.idSede) {
+            if (isEdit && !payload.idSede) {
                 alert("No se encontró el identificador de la sede que deseas editar.");
                 return;
             }
@@ -3433,7 +3188,6 @@ if (redAutoridad) {
                     } 
                     
                     appState.aspirantes = ordenarAspirantes(appState.aspirantes);
-
                     closeModal('addModal'); 
                     appState.currentView === 'detail' ? renderDetail() : render(); 
                 } else {
@@ -3706,7 +3460,6 @@ if (redAutoridad) {
             `;
 
             const printGrid = printContainer.querySelector('#printGrid');
-
             Array.from(gridOriginal.children).forEach(tarjeta => {
                 const clon = tarjeta.cloneNode(true);
                 clon.className = "bg-white rounded-lg border border-gray-200 overflow-hidden"; 
@@ -3798,7 +3551,7 @@ if (redAutoridad) {
         }
 
         async function confirmDelete() {
-            if(confirm("¡ATENCIÓN!\n\n¿Estás seguro de que deseas eliminar definitivamente a este aspirante? Esta acción NO se puede deshacer.")) {
+            if(confirm("¡ATENCIÓN!\n\n¿Estás seguro de que deseas eliminar definitivamente a este aspirante?")) {
                 showLoading("Eliminando registro...");
                 try {
                     const res = await postData({ 
