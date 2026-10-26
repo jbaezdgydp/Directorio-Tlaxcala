@@ -1920,6 +1920,7 @@
 
         
         // Procesador para limpiar las columnas desfasadas del INE
+        // Procesador para limpiar las columnas desfasadas del INE
         function getDatosElectorales(c) {
             let seccionCol = String(c.noSeccion || '').trim();
             let municipioCol = String(c.municipio || '').trim();
@@ -1936,14 +1937,18 @@
             }
             
             let municipioReal = municipioCol;
-            let localidadReal = '';
+            // FIX: Leer directamente el campo 'localidad' del objeto, ya no 'ubicacion'
+            let localidadReal = String(c.localidad || '').trim(); 
             let tipoCasillaReal = tipoCasCol;
             
             // 2. Detectar columnas desfasadas (ej. Si tipoSeccion tiene "31) TETLA...")
             if (tipoSecCol && tipoSecCol !== 'Urbana' && tipoSecCol !== 'No Urbana' && tipoSecCol !== 'Rural') {
-                // Limpiamos los prefijos numéricos como "31) "
                 municipioReal = tipoSecCol.replace(/^\d+\)\s*/, '');
-                localidadReal = tipoCasCol.replace(/^\d+\)\s*/, '');
+                
+                // Fallback para bases de datos heredadas
+                if (!localidadReal) {
+                    localidadReal = tipoCasCol.replace(/^\d+\)\s*/, ''); 
+                }
                 
                 // Deducir el tipo de casilla desde el sufijo del ID
                 let sufijo = String(c.idCasilla).split('_').pop() || '';
@@ -1952,11 +1957,6 @@
                 else if (sufijo.startsWith('E') && !sufijo.startsWith('EX')) tipoCasillaReal = 'Especial ' + sufijo.substring(1);
                 else if (sufijo.startsWith('EX')) tipoCasillaReal = 'Extraordinaria ' + sufijo.substring(2);
                 else tipoCasillaReal = sufijo;
-            } else {
-                // Si son datos capturados limpios desde tu formulario
-                municipioReal = municipioCol;
-                localidadReal = String(c.ubicacion || '').trim(); 
-                tipoCasillaReal = tipoCasCol;
             }
             
             return { seccionReal, municipioReal, localidadReal, tipoCasillaReal };
@@ -4279,4 +4279,4 @@
         });
     </script>
 </body>
-</html> 
+</html>
