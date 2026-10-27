@@ -388,9 +388,12 @@
                             <button id="subTabSedes" onclick="switchAutoridadesSubTab('sedes')" class="px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100 transition">
                                 <i class="fas fa-building mr-1"></i> Sedes y Juntas (<span id="countSedesBadge">0</span>)
                             </button>
+                            <button id="subTabCasillas" onclick="switchAutoridadesSubTab('casillas')" class="px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100 transition border-l border-gray-300">
+                                <i class="fas fa-person-booth mr-1"></i> Casillas (<span id="countCasillasBadge">0</span>)
+                            </button>
                         </div>
 
-                        <button onclick="exportarAutoridadesPDF()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-sm flex items-center">
+                        <button onclick="exportarModuloActivoPDF()" class="bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-md font-medium transition duration-150 ease-in-out shadow text-sm flex items-center">
                             <i class="fas fa-file-pdf mr-2"></i> Exportar
                         </button>
                     </div>
@@ -522,7 +525,53 @@
                     <div id="sedesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </div>
             </div>
-
+            <!-- SUB-VISTA C: MAPA Y DIRECTORIO DE CASILLAS -->
+                <div id="subViewCasillas" class="hidden space-y-6">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                       <div class="flex flex-col mb-4 gap-3">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-map-marked-alt text-purple-600 mr-2"></i>Mapa Estatal de Casillas Electorales</h3>
+                                    <p class="text-xs text-gray-500">Ubicación georreferenciada de las casillas en el estado.</p>
+                                </div>
+                                <button onclick="limpiarFiltrosMapaCasillas()" class="text-xs font-bold text-gray-500 hover:text-purple-700 transition flex items-center mt-1">
+                                    <i class="fas fa-eraser mr-1"></i> Quitar Filtros
+                                </button>
+                            </div>
+                            
+                            <!-- PANEL DE 4 FILTROS EN CASCADA -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full bg-purple-50 p-3 rounded-lg border border-purple-100">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-purple-800 uppercase mb-1">Distrito Federal</label>
+                                    <select id="mapFilterCasillaFed" onchange="mapFiltrarDistritosLocales()" class="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs focus:ring-2 focus:ring-purple-500 bg-white">
+                                        <option value="Todos">Todos</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-purple-800 uppercase mb-1">Distrito Local</label>
+                                    <select id="mapFilterCasillaLocDist" onchange="mapFiltrarMunicipios()" class="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs focus:ring-2 focus:ring-purple-500 bg-white">
+                                        <option value="Todos">Todos</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-purple-800 uppercase mb-1">Municipio</label>
+                                    <select id="mapFilterCasillaMuni" onchange="mapFiltrarLocalidades()" class="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs focus:ring-2 focus:ring-purple-500 bg-white">
+                                        <option value="Todos">Todos los municipios</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-purple-800 uppercase mb-1">Localidad</label>
+                                    <select id="mapFilterCasillaLoc" onchange="renderCasillas()" class="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs focus:ring-2 focus:ring-purple-500 bg-white">
+                                        <option value="Todas">Todas las localidades</option>
+                                    </select>
+                                </div>
+                            </div>
+                          
+                        </div>
+                        <div id="casillasGeneralMapContainer" class="w-full h-[500px] rounded-md border border-gray-300 z-10 relative bg-gray-50"></div>
+                    </div>
+                    <div id="casillasGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </div>
             <!-- VISTA DE DETALLE DE UNA AUTORIDAD ELECTORAL -->
             <div id="autoridadDetailView" class="hidden">
                 <div class="flex justify-between items-center mb-4">
@@ -1183,29 +1232,50 @@
             }
         }
 
-        function switchAutoridadesSubTab(subTab) {
+       function switchAutoridadesSubTab(subTab) {
             appState.autoridadesSubTab = subTab;
             const subFunc = document.getElementById('subViewFuncionarios');
             const subSedes = document.getElementById('subViewSedes');
+            const subCasillas = document.getElementById('subViewCasillas');
             const btnFunc = document.getElementById('subTabFuncionarios');
             const btnSedes = document.getElementById('subTabSedes');
+            const btnCasillas = document.getElementById('subTabCasillas');
             const btnText = document.getElementById('btnNuevoRegistroText');
+
+            const activeClass = "px-3 py-1.5 text-xs font-bold bg-purple-700 text-white transition";
+            const inactiveClass = "px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100 transition border-l border-gray-300";
 
             if (subTab === 'funcionarios') {
                 subFunc.classList.remove('hidden');
                 subSedes.classList.add('hidden');
-                btnFunc.className = "px-3 py-1.5 text-xs font-bold bg-purple-700 text-white transition";
-                btnSedes.className = "px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100 transition";
+                if (subCasillas) subCasillas.classList.add('hidden');
+                btnFunc.className = activeClass;
+                btnSedes.className = inactiveClass;
+                if (btnCasillas) btnCasillas.className = inactiveClass;
                 if (btnText && appState.activeModule === 'autoridades') btnText.innerText = "Nueva Autoridad";
+                document.getElementById('btnNuevoRegistro').classList.remove('hidden');
                 renderAutoridades();
-            } else {
+            } else if (subTab === 'sedes') {
                 subFunc.classList.add('hidden');
                 subSedes.classList.remove('hidden');
-                btnSedes.className = "px-3 py-1.5 text-xs font-bold bg-purple-700 text-white transition";
-                btnFunc.className = "px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100 transition";
+                if (subCasillas) subCasillas.classList.add('hidden');
+                btnSedes.className = activeClass;
+                btnFunc.className = inactiveClass;
+                if (btnCasillas) btnCasillas.className = inactiveClass;
                 if (btnText && appState.activeModule === 'autoridades') btnText.innerText = "Nueva Sede";
+                document.getElementById('btnNuevoRegistro').classList.remove('hidden');
                 renderSedes();
+            } else if (subTab === 'casillas') {
+                subFunc.classList.add('hidden');
+                subSedes.classList.add('hidden');
+                if (subCasillas) subCasillas.classList.remove('hidden');
+                if (btnCasillas) btnCasillas.className = activeClass;
+                btnFunc.className = inactiveClass;
+                btnSedes.className = inactiveClass;
+                document.getElementById('btnNuevoRegistro').classList.add('hidden');
+                renderCasillas();
             }
+            if (subTab !== 'casillas') applyPermissions();
         }
 
         const CLAVE_SESION_TAB = 'directorio_tlaxcala_sesion_tab_v1';
@@ -1733,8 +1803,11 @@
             try {
                 limpiarCacheDirectorio();
                 await fetchInitialData();
-                if (appState.activeModule === 'autoridades' && appState.autoridadesSubTab === 'sedes') {
-                    renderSedes();
+                // FIX: Le decimos al sistema que actualice la vista en la que estemos
+                if (appState.activeModule === 'autoridades') {
+                    if (appState.autoridadesSubTab === 'sedes') renderSedes();
+                    else if (appState.autoridadesSubTab === 'casillas') renderCasillas(); // ¡Línea clave!
+                    else renderAutoridades();
                 }
             } finally {
                 botones.forEach(boton => {
@@ -1753,7 +1826,7 @@
                 let data = obtenerDatosCacheDirectorio();
 
                 if (!data) {
-                    const response = await fetch(`${API_URL}?accion=obtenerTodo`, {
+                    const response = await fetch(`${API_URL}?accion=obtenerTodo&t=${Date.now()}`, {
                         method: 'GET',
                         redirect: 'follow'
                     });
@@ -2699,6 +2772,27 @@
 
             const countSedesEl = document.getElementById('countSedesBadge');
             if (countSedesEl) countSedesEl.innerText = appState.sedes.length;
+
+            const countCasillasEl = document.getElementById('countCasillasBadge');
+            if (countCasillasEl) countCasillasEl.innerText = appState.casillas.length;
+
+            // BLOQUE CORREGIDO (PASO 2): Inicialización del filtro en cascada
+            const mapFilterFed = document.getElementById('mapFilterCasillaFed');
+            if (mapFilterFed && mapFilterFed.options.length <= 1) {
+                const fedSet = new Set();
+                appState.casillas.forEach(c => {
+                    if (c.distritoFederal) fedSet.add(c.distritoFederal.trim());
+                });
+
+                let htmlFed = '<option value="Todos">Todos</option>';
+                Array.from(fedSet).filter(Boolean).sort().forEach(d => htmlFed += `<option value="${d}">${d}</option>`);
+                mapFilterFed.innerHTML = htmlFed;
+
+                // Iniciar el efecto cascada (este llenará automáticamente los locales, luego municipios y luego localidades)
+                if (typeof mapFiltrarDistritosLocales === 'function') {
+                    mapFiltrarDistritosLocales();
+                }
+            }
         }
 
         function limpiarFiltrosAutoridades() {
@@ -4274,9 +4368,406 @@
             renderAutoridades();
         }
 
+        function limpiarFiltrosMapaCasillas() {
+            const fedFilter = document.getElementById('mapFilterCasillaFed');
+            if (fedFilter) {
+                // Reiniciamos el nivel más alto al valor por defecto
+                fedFilter.value = 'Todos';
+                
+                // Disparamos la cascada. Esto reconstruirá automáticamente los distritos locales, 
+                // luego los municipios, luego las localidades y finalmente redibujará el mapa.
+                if (typeof mapFiltrarDistritosLocales === 'function') {
+                    mapFiltrarDistritosLocales();
+                }
+            }
+        }
+
+       function renderCasillas() {
+            const grid = document.getElementById('casillasGrid');
+            const mapDiv = document.getElementById('casillasGeneralMapContainer');
+            if (!grid || !mapDiv) return;
+
+            if (appState.casillasMapInstance) {
+                appState.casillasMapInstance.remove();
+                appState.casillasMapInstance = null;
+            }
+
+            const filterMuni = document.getElementById('mapFilterCasillaMuni')?.value || 'Todos';
+            const filterLoc = document.getElementById('mapFilterCasillaLoc')?.value || 'Todas';
+            const filterFed = document.getElementById('mapFilterCasillaFed')?.value || 'Todos';
+            const filterLocDist = document.getElementById('mapFilterCasillaLocDist')?.value || 'Todos';
+            
+            let validPoints = [];
+            let html = '';
+
+            const casillasFiltradas = appState.casillas.filter(c => {
+                const datos = getDatosElectorales(c);
+                const matchMuni = filterMuni === 'Todos' || datos.municipioReal === filterMuni;
+                const matchLoc = filterLoc === 'Todas' || datos.localidadReal === filterLoc;
+                const matchFed = filterFed === 'Todos' || (c.distritoFederal && c.distritoFederal.trim() === filterFed);
+                const matchLocDist = filterLocDist === 'Todos' || (c.distritoLocal && c.distritoLocal.trim() === filterLocDist);
+                
+                return matchMuni && matchLoc && matchFed && matchLocDist;
+            });
+
+            const maxTarjetasRenderizadas = 100;
+            const casillasParaMostrar = casillasFiltradas.slice(0, maxTarjetasRenderizadas);
+
+            casillasParaMostrar.sort((a, b) => String(a.idCasilla).localeCompare(String(b.idCasilla))).forEach(c => {
+                const datos = getDatosElectorales(c);
+                let numAdscritos = appState.autoridades.filter(a => a.idCasilla === c.idCasilla).length;
+
+                html += `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">Sección ${datos.seccionReal}</span>
+                            <span class="text-xs font-bold text-gray-500">${c.idCasilla}</span>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-900">${datos.tipoCasillaReal}</h4>
+                        <p class="text-xs font-semibold text-purple-700 mb-3"><i class="fas fa-map-marker-alt mr-1"></i>${datos.municipioReal} - ${datos.localidadReal}</p>
+                        
+                        <div class="text-xs text-gray-600 space-y-1.5 border-t border-gray-100 pt-3">
+                            <p><i class="fas fa-building w-4 text-gray-400 mr-1"></i> <b>Ubicación:</b> ${c.ubicacion || 'N/A'}</p>
+                            <p><i class="fas fa-map-pin w-4 text-gray-400 mr-1"></i> <b>Domicilio:</b> ${c.domicilio || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center text-xs">
+                        <span class="font-semibold text-gray-700"><i class="fas fa-users mr-1 text-purple-600"></i> ${numAdscritos} adscritos</span>
+                        <button onclick="filtrarPorCasillaMesa('${c.idCasilla}')" class="text-purple-700 hover:underline font-semibold">Ver personal &rarr;</button>
+                    </div>
+                </div>`;
+            });
+
+            // Procesar pines del mapa (límite de 300 para no bloquear la página)
+            const maxPinesMapa = 300;
+            const casillasParaMapa = casillasFiltradas.slice(0, maxPinesMapa);
+
+            casillasParaMapa.forEach(c => {
+                let lat, lng;
+                
+                // Método a prueba de balas: buscar la coma, separar y limpiar caracteres extraños
+                if (c.coordenadasGps && typeof c.coordenadasGps === 'string' && c.coordenadasGps.includes(',')) {
+                    const partes = c.coordenadasGps.split(',');
+                    // Limpiamos todo lo que no sea número, punto o signo negativo
+                    lat = parseFloat(partes[0].replace(/[^0-9.-]/g, ''));
+                    lng = parseFloat(partes[1].replace(/[^0-9.-]/g, ''));
+                }
+
+                if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+                    // Offset para que si dos casillas están en la misma escuela, se vean ambas chinchetas separadas
+                    const offsetLat = lat + (Math.random() - 0.5) * 0.0003;
+                    const offsetLng = lng + (Math.random() - 0.5) * 0.0003;
+                    validPoints.push({ lat: offsetLat, lng: offsetLng, casilla: c, datos: getDatosElectorales(c) });
+                }
+            });
+
+            if (casillasFiltradas.length > maxTarjetasRenderizadas) {
+                html += `<div class="col-span-full text-center py-4 text-gray-500 font-semibold bg-gray-100 rounded-md">Mostrando las primeras ${maxTarjetasRenderizadas} casillas. Usa el filtro de municipio para ver más.</div>`;
+            }
+
+            grid.innerHTML = html || `<div class="col-span-full text-center py-8 text-gray-500">No hay casillas en este municipio.</div>`;
+
+            if (validPoints.length > 0) {
+                appState.casillasMapInstance = L.map('casillasGeneralMapContainer').setView([validPoints[0].lat, validPoints[0].lng], 12);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(appState.casillasMapInstance);
+
+                validPoints.forEach(p => {
+                    const color = p.datos.tipoCasillaReal.includes('Básica') ? 'blue' : (p.datos.tipoCasillaReal.includes('Contigua') ? 'green' : 'red');
+                    const markerStyles = `background-color: ${color}; width: 1.5rem; height: 1.5rem; display: block; left: -0.75rem; top: -0.75rem; position: relative; border-radius: 3rem 3rem 0; transform: rotate(45deg); border: 1px solid #FFF; box-shadow: 0 1px 3px rgba(0,0,0,0.3);`;
+                    const customIcon = L.divIcon({ className: "custom-pin", iconAnchor: [0, 24], popupAnchor: [0, -30], html: `<span style="${markerStyles}"></span>` });
+
+                    L.marker([p.lat, p.lng], {icon: customIcon})
+                      .addTo(appState.casillasMapInstance)
+                      .bindPopup(`<div class="text-sm"><b class="text-purple-700">Sección ${p.datos.seccionReal} - ${p.datos.tipoCasillaReal}</b><br><span class="text-xs text-gray-600">${p.casilla.ubicacion || ''}</span><hr class="my-1"><b>Municipio:</b> ${p.datos.municipioReal}</div>`);
+                });
+
+                if (validPoints.length > 1) {
+                    const bounds = L.latLngBounds(validPoints.map(p => [p.lat, p.lng]));
+                    appState.casillasMapInstance.fitBounds(bounds, { padding: [40, 40] });
+                }
+                
+                if (casillasFiltradas.length > maxPinesMapa) {
+                     // Añadimos una advertencia visual sobre el mapa
+                     const mapWarning = document.createElement('div');
+                     mapWarning.className = "absolute top-2 left-1/2 transform -translate-x-1/2 bg-yellow-100 border border-yellow-400 text-yellow-800 text-xs px-3 py-1 rounded shadow z-[1000]";
+                     mapWarning.innerText = `Mostrando ${maxPinesMapa} marcadores en el mapa para evitar saturación. Usa el filtro de municipio.`;
+                     document.getElementById('casillasGeneralMapContainer').appendChild(mapWarning);
+                }
+
+                setTimeout(() => { if (appState.casillasMapInstance) appState.casillasMapInstance.invalidateSize(); }, 200);
+            } else {
+                mapDiv.innerHTML = `<div class="h-full flex items-center justify-center text-gray-400 italic">No hay coordenadas GPS registradas en las casillas mostradas. Usa el botón 'Actualizar datos'.</div>`;
+            }
+        }
+        
+        // Función para el botón "Ver personal ->" desde las tarjetas de casillas
+        function filtrarPorCasillaMesa(idCasilla) {
+            switchAutoridadesSubTab('funcionarios');
+            document.getElementById('filterAutOrgano').value = 'Mesa Directiva de Casilla';
+            handleDashboardOrganoChange(); 
+            setTimeout(() => {
+                const casillaObj = appState.casillas.find(c => c.idCasilla === idCasilla);
+                if(casillaObj) {
+                    const datosCas = getDatosElectorales(casillaObj);
+                    const selMuni = document.getElementById('dashFilterMunicipio');
+                    if(selMuni) { selMuni.value = datosCas.municipioReal; dashFiltrarLocalidades(); }
+                    const selLoc = document.getElementById('dashFilterLocalidad');
+                    if(selLoc) { selLoc.value = datosCas.localidadReal; dashFiltrarSecciones(); }
+                    const selSec = document.getElementById('dashFilterSeccion');
+                    if(selSec) { selSec.value = datosCas.seccionReal; dashFiltrarCasillas(); }
+                    const selCas = document.getElementById('dashFilterCasilla');
+                    if(selCas) selCas.value = datosCas.tipoCasillaReal;
+                    renderAutoridades();
+                }
+            }, 150);
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             checkSavedSession();
         });
+
+        function mapFiltrarDistritosLocales() {
+            const fedFiltro = document.getElementById('mapFilterCasillaFed')?.value || 'Todos';
+            const selectLoc = document.getElementById('mapFilterCasillaLocDist');
+            if(!selectLoc) return;
+
+            const locSet = new Set();
+            (appState.casillas || []).forEach(c => {
+                if (fedFiltro === 'Todos' || (c.distritoFederal && c.distritoFederal.trim() === fedFiltro)) {
+                    if (c.distritoLocal) locSet.add(c.distritoLocal.trim());
+                }
+            });
+
+            let html = '<option value="Todos">Todos</option>';
+            Array.from(locSet).filter(Boolean).sort((a,b) => {
+                const numA = parseInt(a.replace(/\D/g, ''));
+                const numB = parseInt(b.replace(/\D/g, ''));
+                if(!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                return a.localeCompare(b);
+            }).forEach(d => html += `<option value="${d}">${d}</option>`);
+            selectLoc.innerHTML = html;
+
+            mapFiltrarMunicipios();
+        }
+
+        function mapFiltrarMunicipios() {
+            const fedFiltro = document.getElementById('mapFilterCasillaFed')?.value || 'Todos';
+            const locDistFiltro = document.getElementById('mapFilterCasillaLocDist')?.value || 'Todos';
+            const selectMuni = document.getElementById('mapFilterCasillaMuni');
+            if (!selectMuni) return;
+
+            const muniSet = new Set();
+            (appState.casillas || []).forEach(c => {
+                const matchFed = fedFiltro === 'Todos' || (c.distritoFederal && c.distritoFederal.trim() === fedFiltro);
+                const matchLocDist = locDistFiltro === 'Todos' || (c.distritoLocal && c.distritoLocal.trim() === locDistFiltro);
+                if (matchFed && matchLocDist) {
+                    const datos = getDatosElectorales(c);
+                    if (datos.municipioReal) muniSet.add(datos.municipioReal);
+                }
+            });
+
+            let html = '<option value="Todos">Todos los municipios</option>';
+            Array.from(muniSet).sort().forEach(m => html += `<option value="${m}">${m}</option>`);
+            selectMuni.innerHTML = html;
+
+            mapFiltrarLocalidades();
+        }
+
+        function mapFiltrarLocalidades() {
+            const fedFiltro = document.getElementById('mapFilterCasillaFed')?.value || 'Todos';
+            const locDistFiltro = document.getElementById('mapFilterCasillaLocDist')?.value || 'Todos';
+            const muniFiltro = document.getElementById('mapFilterCasillaMuni')?.value || 'Todos';
+            const selectLocalidad = document.getElementById('mapFilterCasillaLoc');
+            if (!selectLocalidad) return;
+            
+            const localidadesSet = new Set();
+            (appState.casillas || []).forEach(c => {
+                const matchFed = fedFiltro === 'Todos' || (c.distritoFederal && c.distritoFederal.trim() === fedFiltro);
+                const matchLocDist = locDistFiltro === 'Todos' || (c.distritoLocal && c.distritoLocal.trim() === locDistFiltro);
+                
+                if (matchFed && matchLocDist) {
+                    const datos = getDatosElectorales(c);
+                    if (muniFiltro === 'Todos' || datos.municipioReal === muniFiltro) {
+                        if (datos.localidadReal) localidadesSet.add(datos.localidadReal);
+                    }
+                }
+            });
+
+            let html = '<option value="Todas">Todas las localidades</option>';
+            Array.from(localidadesSet).sort().forEach(loc => html += `<option value="${loc}">${loc}</option>`);
+            selectLocalidad.innerHTML = html;
+            
+            renderCasillas();
+        }
+
+        function exportarModuloActivoPDF() {
+            if (appState.autoridadesSubTab === 'funcionarios') {
+                exportarAutoridadesPDF();
+            } else if (appState.autoridadesSubTab === 'sedes') {
+                exportarSedesPDF();
+            } else if (appState.autoridadesSubTab === 'casillas') {
+                exportarCasillasPDF();
+            }
+        }
+
+        function exportarCasillasPDF() {
+            showLoading('Generando reporte PDF de Casillas...');
+            
+            // 1. Clonar el contenedor principal de casillas
+            const gridOriginal = document.getElementById('casillasGrid');
+            const mapContainerOriginal = document.getElementById('casillasGeneralMapContainer');
+            
+            // 2. Obtener los textos de los filtros para el subtítulo
+            const mFed = document.getElementById('mapFilterCasillaFed')?.value || 'Todos';
+            const mLoc = document.getElementById('mapFilterCasillaLocDist')?.value || 'Todos';
+            const mMuni = document.getElementById('mapFilterCasillaMuni')?.value || 'Todos';
+            const mLoca = document.getElementById('mapFilterCasillaLoc')?.value || 'Todas';
+            let subtitulo = `Filtros: Fed (${mFed}), Loc (${mLoc}), Muni (${mMuni}), Localidad (${mLoca})`;
+
+            // 3. Crear el contenedor para impresión
+            const printContainer = document.createElement('div');
+            printContainer.style.width = '800px';
+            printContainer.style.margin = '0 auto';
+            printContainer.style.backgroundColor = '#f3f4f6';
+            printContainer.style.padding = '20px';
+
+            printContainer.innerHTML = `
+                <div style="margin-bottom: 20px; border-bottom: 2px solid #6b21a8; padding-bottom: 10px;">
+                    <h1 style="font-size: 24px; font-weight: bold; color: #1f2937; margin: 0;">Directorio y Ubicación de Casillas Electorales</h1>
+                    <p style="font-size: 14px; color: #4b5563; margin-top: 5px;">${subtitulo}</p>
+                </div>
+                
+                <!-- Contenedor para la captura del mapa -->
+                <div id="printMapContainer" style="margin-bottom: 20px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
+                </div>
+
+                <!-- Contenedor para las tarjetas -->
+                <div id="printCasillasGrid" style="display: flex; flex-direction: column; gap: 14px;"></div>
+            `;
+
+            // 4. Copiar las tarjetas HTML
+            const printGrid = printContainer.querySelector('#printCasillasGrid');
+            Array.from(gridOriginal.children).forEach(tarjeta => {
+                const clon = tarjeta.cloneNode(true);
+                clon.className = "bg-white rounded-lg border border-gray-200 overflow-hidden p-4";
+                clon.style.width = "100%";
+                clon.style.pageBreakInside = "avoid";
+                printGrid.appendChild(clon);
+            });
+
+            // Ocultar la vista real y montar el de impresión en el body temporalmente
+            const dashboard = document.getElementById('autoridadesDashboardView');
+            dashboard.style.display = 'none';
+            document.body.appendChild(printContainer);
+            window.scrollTo(0, 0);
+
+            // 5. Convertir el mapa de Leaflet a imagen estática mediante html2canvas (para que salga en el PDF)
+            const printMapContainer = printContainer.querySelector('#printMapContainer');
+            if (mapContainerOriginal && mapContainerOriginal.innerHTML.trim() !== '' && !mapContainerOriginal.innerText.includes("No hay coordenadas")) {
+                // html2canvas necesita trabajar sobre elementos visibles en pantalla
+                dashboard.style.display = ''; // Lo mostramos un milisegundo
+                
+                // Usamos html2canvas local para capturar el div del mapa
+                import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js').then(() => {
+                    html2canvas(mapContainerOriginal, { useCORS: true, logging: false }).then(canvas => {
+                        dashboard.style.display = 'none'; // Lo volvems a ocultar
+                        const img = document.createElement('img');
+                        img.src = canvas.toDataURL('image/png');
+                        img.style.width = '100%';
+                        img.style.height = 'auto';
+                        printMapContainer.appendChild(img);
+                        generarElPdfCasillas(printContainer, dashboard);
+                    });
+                }).catch(() => {
+                    // Si falla html2canvas, imprimimos sin mapa
+                    printMapContainer.innerHTML = '<p style="padding: 10px; color: gray;">[El mapa no pudo ser renderizado en la exportación]</p>';
+                    generarElPdfCasillas(printContainer, dashboard);
+                });
+            } else {
+                 printMapContainer.style.display = 'none';
+                 generarElPdfCasillas(printContainer, dashboard);
+            }
+        }
+        
+        function generarElPdfCasillas(printContainer, dashboard) {
+            const opciones = {
+                margin:       10,
+                filename:     'Reporte_Casillas_Electorales.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
+            };
+
+            html2pdf().set(opciones).from(printContainer).save().then(() => {
+                document.body.removeChild(printContainer);
+                dashboard.style.display = '';
+                hideLoading();
+            }).catch(error => {
+                console.error('Error al generar PDF:', error);
+                alert('Ocurrió un error al generar el PDF.');
+                document.body.removeChild(printContainer);
+                dashboard.style.display = '';
+                hideLoading();
+            });
+        }
+
+        // De paso, agregamos la exportación de la pestaña Sedes para que todo esté completo
+        function exportarSedesPDF() {
+            showLoading('Generando reporte PDF de Sedes...');
+            const gridOriginal = document.getElementById('sedesGrid');
+            const textoContador = document.getElementById('countSedesBadge').innerText;
+
+            const printContainer = document.createElement('div');
+            printContainer.style.width = '800px';
+            printContainer.style.margin = '0 auto';
+            printContainer.style.backgroundColor = '#f3f4f6';
+            printContainer.style.padding = '20px';
+
+            printContainer.innerHTML = `
+                <div style="margin-bottom: 20px; border-bottom: 2px solid #6b21a8; padding-bottom: 10px;">
+                    <h1 style="font-size: 24px; font-weight: bold; color: #1f2937; margin: 0;">Directorio de Sedes Electorales</h1>
+                    <p style="font-size: 14px; color: #4b5563; margin-top: 5px;">Total de sedes: ${textoContador}</p>
+                </div>
+                <div id="printSedesGrid" style="display: flex; flex-direction: column; gap: 14px;"></div>
+            `;
+
+            const printGrid = printContainer.querySelector('#printSedesGrid');
+            Array.from(gridOriginal.children).forEach(tarjeta => {
+                const clon = tarjeta.cloneNode(true);
+                clon.className = "bg-white rounded-lg border border-gray-200 overflow-hidden p-4";
+                clon.style.width = "100%";
+                clon.style.pageBreakInside = "avoid";
+                printGrid.appendChild(clon);
+            });
+
+            const dashboard = document.getElementById('autoridadesDashboardView');
+            dashboard.style.display = 'none';
+            document.body.appendChild(printContainer);
+            window.scrollTo(0, 0);
+
+            const opciones = {
+                margin:       10,
+                filename:     'Reporte_Sedes_Electorales.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
+            };
+
+            html2pdf().set(opciones).from(printContainer).save().then(() => {
+                document.body.removeChild(printContainer);
+                dashboard.style.display = '';
+                hideLoading();
+            }).catch(error => {
+                alert('Ocurrió un error al generar el PDF.');
+                document.body.removeChild(printContainer);
+                dashboard.style.display = '';
+                hideLoading();
+            });
+        }
+
     </script>
 </body>
 </html>
