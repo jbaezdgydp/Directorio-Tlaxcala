@@ -539,8 +539,8 @@
                                 </button>
                             </div>
                             
-                            <!-- PANEL DE 4 FILTROS EN CASCADA -->
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full bg-purple-50 p-3 rounded-lg border border-purple-100">
+                            <!-- PANEL DE 5 FILTROS EN CASCADA -->
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 w-full bg-purple-50 p-3 rounded-lg border border-purple-100">
                                 <div>
                                     <label class="block text-[10px] font-bold text-purple-800 uppercase mb-1">Distrito Federal</label>
                                     <select id="mapFilterCasillaFed" onchange="mapFiltrarDistritosLocales()" class="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs focus:ring-2 focus:ring-purple-500 bg-white">
@@ -561,8 +561,16 @@
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold text-purple-800 uppercase mb-1">Localidad</label>
-                                    <select id="mapFilterCasillaLoc" onchange="renderCasillas()" class="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs focus:ring-2 focus:ring-purple-500 bg-white">
+                                    <!-- Cambiamos renderCasillas() por mapFiltrarSeccionesMap() -->
+                                    <select id="mapFilterCasillaLoc" onchange="mapFiltrarSeccionesMap()" class="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs focus:ring-2 focus:ring-purple-500 bg-white">
                                         <option value="Todas">Todas las localidades</option>
+                                    </select>
+                                </div>
+                                <!-- NUEVO FILTRO: SECCIÓN -->
+                                <div>
+                                    <label class="block text-[10px] font-bold text-purple-800 uppercase mb-1">Sección</label>
+                                    <select id="mapFilterCasillaSec" onchange="renderCasillas()" class="w-full border border-gray-300 rounded-md px-2 py-1.5 text-xs focus:ring-2 focus:ring-purple-500 bg-white">
+                                        <option value="Todas">Todas las secciones</option>
                                     </select>
                                 </div>
                             </div>
@@ -4396,6 +4404,7 @@
             const filterLoc = document.getElementById('mapFilterCasillaLoc')?.value || 'Todas';
             const filterFed = document.getElementById('mapFilterCasillaFed')?.value || 'Todos';
             const filterLocDist = document.getElementById('mapFilterCasillaLocDist')?.value || 'Todos';
+            const filterSec = document.getElementById('mapFilterCasillaSec')?.value || 'Todas';
             
             let validPoints = [];
             let html = '';
@@ -4406,8 +4415,10 @@
                 const matchLoc = filterLoc === 'Todas' || datos.localidadReal === filterLoc;
                 const matchFed = filterFed === 'Todos' || (c.distritoFederal && c.distritoFederal.trim() === filterFed);
                 const matchLocDist = filterLocDist === 'Todos' || (c.distritoLocal && c.distritoLocal.trim() === filterLocDist);
-                
-                return matchMuni && matchLoc && matchFed && matchLocDist;
+                // NUEVA VALIDACIÓN:
+                const matchSec = filterSec === 'Todas' || datos.seccionReal === filterSec;
+                // AGREGA matchSec AL RETURN
+                return matchMuni && matchLoc && matchFed && matchLocDist && matchSec;
             });
 
             const maxTarjetasRenderizadas = 100;
@@ -4598,8 +4609,38 @@
             Array.from(localidadesSet).sort().forEach(loc => html += `<option value="${loc}">${loc}</option>`);
             selectLocalidad.innerHTML = html;
             
-            renderCasillas();
+            mapFiltrarSeccionesMap();
         }
+
+        function mapFiltrarSeccionesMap() {
+                const fedFiltro = document.getElementById('mapFilterCasillaFed')?.value || 'Todos';
+                const locDistFiltro = document.getElementById('mapFilterCasillaLocDist')?.value || 'Todos';
+                const muniFiltro = document.getElementById('mapFilterCasillaMuni')?.value || 'Todos';
+                const locFiltro = document.getElementById('mapFilterCasillaLoc')?.value || 'Todas';
+                const selectSec = document.getElementById('mapFilterCasillaSec');
+                if (!selectSec) return;
+                
+                const secSet = new Set();
+                (appState.casillas || []).forEach(c => {
+                    const matchFed = fedFiltro === 'Todos' || (c.distritoFederal && c.distritoFederal.trim() === fedFiltro);
+                    const matchLocDist = locDistFiltro === 'Todos' || (c.distritoLocal && c.distritoLocal.trim() === locDistFiltro);
+                    
+                    if (matchFed && matchLocDist) {
+                        const datos = getDatosElectorales(c);
+                        if ((muniFiltro === 'Todos' || datos.municipioReal === muniFiltro) &&
+                            (locFiltro === 'Todas' || datos.localidadReal === locFiltro)) {
+                            if (datos.seccionReal) secSet.add(datos.seccionReal);
+                        }
+                    }
+                });
+
+                let html = '<option value="Todas">Todas las secciones</option>';
+                // Ordenamos numéricamente
+                Array.from(secSet).sort((a,b) => parseInt(a,10) - parseInt(b,10)).forEach(sec => html += `<option value="${sec}">Sección ${sec}</option>`);
+                selectSec.innerHTML = html;
+                
+                renderCasillas();
+            }
 
         function exportarModuloActivoPDF() {
             if (appState.autoridadesSubTab === 'funcionarios') {
@@ -4623,7 +4664,8 @@
             const mLoc = document.getElementById('mapFilterCasillaLocDist')?.value || 'Todos';
             const mMuni = document.getElementById('mapFilterCasillaMuni')?.value || 'Todos';
             const mLoca = document.getElementById('mapFilterCasillaLoc')?.value || 'Todas';
-            let subtitulo = `Filtros: Fed (${mFed}), Loc (${mLoc}), Muni (${mMuni}), Localidad (${mLoca})`;
+            const mSec = document.getElementById('mapFilterCasillaSec')?.value || 'Todas';
+            let subtitulo = `Filtros: Fed (${mFed}), Loc (${mLoc}), Muni (${mMuni}), Localidad (${mLoca}), Secc (${mSec})`;
 
             // 3. Crear el contenedor para impresión
             const printContainer = document.createElement('div');
