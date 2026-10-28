@@ -1,0 +1,15 @@
+{
+  "name": "Directorio Electoral Tlaxcala",
+  "short_name": "Directorio Tlax.",
+  "start_url": "index.html", 
+  "display": "standalone",
+  "background_color": "#581c87",
+  "theme_color": "#581c87",
+  "icons": [
+    {
+      "src": "icono-directorio.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
